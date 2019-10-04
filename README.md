@@ -1,3 +1,5 @@
 # NetworkKit
 
-A description of this package.
+This package provides basic REST/JSON Networking.
+
+
