@@ -50,6 +50,7 @@ public extension WebServiceProtocol {
         case .none:
             break
         case let .formEncoded(parameters: parameters):
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             request.encodeParameters(parameters: parameters)
         case .json:
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
