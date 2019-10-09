@@ -9,18 +9,16 @@
 import Foundation
 
 public class Webservice: WebServiceProtocol {
-    
     public var baseURL: URL
     public var headerValues: HTTPHeaders
     public var urlSession: URLSession
     public var networkActivity: NetworkActivityProtocol
     public var parser: ParserProtocol
-    
+
     public init(baseURL: URL, headerValues: HTTPHeaders = [:],
-         urlSession: URLSession = URLSession(configuration: .default),
-         networkActivity: NetworkActivityProtocol = NetworkActivity(),
-         parser: ParserProtocol = Parser()) {
-        
+                urlSession: URLSession = URLSession(configuration: .default),
+                networkActivity: NetworkActivityProtocol = NetworkActivity(),
+                parser: ParserProtocol = Parser()) {
         self.baseURL = baseURL
         self.headerValues = headerValues
         self.urlSession = urlSession
@@ -29,104 +27,75 @@ public class Webservice: WebServiceProtocol {
     }
 }
 
-//MARK: - Utility
+// MARK: - Utility
+
 public extension Webservice {
     func deleteAllHeaders() {
-        self.headerValues.removeAll()
+        headerValues.removeAll()
     }
-    
+
     func addHeaderValue(key: String, value: String) {
-        self.headerValues[key] = value
+        headerValues[key] = value
     }
-    
+
     func removeHeaderValue(forKey key: String) {
-        self.headerValues.removeValue(forKey: key)
+        headerValues.removeValue(forKey: key)
     }
 }
 
-//MARK: - Requests
+// MARK: - Requests
+
 public extension Webservice {
     func request<T: Decodable>(withPath path: String,
                                method: HTTPMethod,
                                bodyType: HTTPBodyType = .none,
                                body: Encodable? = nil,
                                queryParameters query: QueryParameters? = nil,
-                               completion: @escaping ResultDecodableCallback<T>) {
-        
-        requestData(forPath: path,method: method, bodyType: bodyType,
-                    body: body, queryParameters: query) { (result: Result <Data, NetworkStackError>) in
+                               completion: @escaping ResultRequestCallback<T>) {
+        requestData(withPath: path, method: method, bodyType: bodyType,
+                    body: body, queryParameters: query) { (request, urlResponse, result: Result<Data, NetworkStackError>) in
                         
-                        switch result {
-                        case .failure(let error):
-                            OperationQueue.main.addOperation {completion(.failure(error))}
-                        case .success(let data):
-                            self.parser.json(data: data, completion: completion)
+                        let data = try? result.get()
+                        
+                        DispatchQueue.global(qos: .background).async {
+                            let decodeResult = self.parser.json(data: data) as Result<T, NetworkStackError>
+                        
+                            OperationQueue.main.addOperation {
+                                completion(Response<T, NetworkStackError>(request: request, response: urlResponse, data: data, result: decodeResult))
+                            }
                         }
         }
     }
-    
-    
-    func requestStatusCode(forPath path: String,
-                           method: HTTPMethod,
-                           bodyType: HTTPBodyType = .none,
-                           body: Encodable? = nil,
-                           queryParameters query: QueryParameters? = nil ,
-                           completion: @escaping ResultStatusCodeCallBack) {
-        
-        guard
-            let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body)
-            else {
-                OperationQueue.main.addOperation {
-                    completion(.failure(.invalidURL))
-                }
-                return
-        }
-        
-        perfomDataTask(withRequest: request) { (data, response, error) in
-            if let error = error {
-                OperationQueue.main.addOperation({ completion(.failure(.responseError(error)))})
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                OperationQueue.main.addOperation {completion(.failure(.responseMissing))}
-                return
-            }
-            OperationQueue.main.addOperation {
-                completion(.success(httpResponse.statusCode))
-            }
-        }
-    }
-    
-    func requestData(forPath path: String,
+
+    func requestData(withPath path: String,
                      method: HTTPMethod,
                      bodyType: HTTPBodyType = .none,
                      body: Encodable? = nil,
-                     queryParameters query: QueryParameters? = nil ,
+                     queryParameters query: QueryParameters? = nil,
                      completion: @escaping ResultDataCallback) {
-        
-        guard
-            let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body, queryParameters: query)
-            else {
-                OperationQueue.main.addOperation {
-                    completion(.failure(.invalidURL))
+        guard let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body, queryParameters: query) else {
+            completion(nil, nil, .failure(.invalidURL))
+            return
+        }
+
+        perfomDataTask(withRequest: request) { (data, response, error) in
+
+            if let error = error {
+                DispatchQueue.main.async {
+                    completion(request, response, .failure(.responseError(error)))
                 }
                 return
-        }
-        
-        perfomDataTask(withRequest: request) { (data, response, error) in
-            if let error = error {
-                OperationQueue.main.addOperation({ completion(.failure(.responseError(error)))})
-                return
             }
-            
+
             guard let data = data else {
-                OperationQueue.main.addOperation({ completion(.failure(NetworkStackError.dataMissing)) })
+                DispatchQueue.main.async {
+                    completion(request, response, .failure(NetworkStackError.dataMissing))
+                }
                 return
             }
-            
-            OperationQueue.main.addOperation {
-                completion(.success(data))
+
+            DispatchQueue.main.async {
+                completion(request, response, .success(data))
             }
         }
     }
