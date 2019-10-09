@@ -14,21 +14,19 @@ public protocol NetworkActivityProtocol {
 }
 
 public class NetworkActivity: NetworkActivityProtocol {
-    public init() {
-        
-    }
+    public init() {}
+
     private var acitivityCount = 0 {
         didSet {
             UIApplication.shared.isNetworkActivityIndicatorVisible = (acitivityCount > 0)
         }
     }
-    
+
     public func increment() {
         OperationQueue.main.addOperation { self.acitivityCount += 1 }
     }
-    
+
     public func decrement() {
         OperationQueue.main.addOperation { self.acitivityCount -= 1 }
     }
 }
-

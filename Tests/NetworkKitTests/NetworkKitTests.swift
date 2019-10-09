@@ -1,15 +1,141 @@
-import XCTest
 @testable import NetworkKit
+import XCTest
+
+struct HTTPBinResult: Decodable {
+    let url: String
+    let form: [String: String]?
+    let args: [String: String]?
+    let json: [String: String]?
+}
 
 final class NetworkKitTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(NetworkKit().text, "Hello, World!")
+    private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
+
+    func testGetRequestResponse() {
+        let expectation = XCTestExpectation(description: "make get request")
+
+        webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.url, "https://httpbin.org/get")
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
+    
+    func testGetDataRequestResponse() {
+        let expectation = XCTestExpectation(description: "make get request")
+
+        webService.requestData(withPath: "get", method: .get) { (request, response, result: Result<Data, NetworkStackError>) in
+            switch result {
+            case let .success(data):
+                XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertNotNil(data)
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    func testPostRequest() {
+        let expectation = XCTestExpectation(description: "make post request")
+
+        let parameters = ["test": "Hello world",
+                          "message": "øåæ",
+                          "face": "🤓"]
+
+        webService.request(withPath: "post", method: .post, bodyType: .formEncoded(parameters: parameters)) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.url, "https://httpbin.org/post")
+                XCTAssertEqual(httpBinResult.form, parameters)
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
+
+    func testPostJSONRequest() {
+        let expectation = XCTestExpectation(description: "make post request")
+
+        let parameters = ["test": "Hello world",
+                          "message": "øåæ",
+                          "face": "🤓"]
+
+        webService.request(withPath: "post", method: .post, bodyType: .json, body: parameters) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.url, "https://httpbin.org/post")
+                XCTAssertEqual(httpBinResult.json, parameters)
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
+    
+    func testGetRequestQueryParamsResponse() {
+        let expectation = XCTestExpectation(description: "make get request with query parameters")
+
+        let parameters = ["test": "Hello world",
+                          "message": "cool",
+                          "number": "23"]
+        
+        webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.args, parameters)
+
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
+    
+    func testGet404Response() {
+        let expectation = XCTestExpectation(description: "get a 404 status code")
+
+        webService.request(withPath: "status/404", method: .get) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case .success:
+                XCTFail()
+            case .failure:
+                XCTAssertNotNil(response.data)
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 404)
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
 }

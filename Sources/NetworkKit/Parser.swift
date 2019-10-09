@@ -9,21 +9,20 @@
 import Foundation
 
 public protocol ParserProtocol {
-    func json<T: Decodable>(data: Data, completion: @escaping ResultDecodableCallback<T>)
+    func json<T: Decodable>(data: Data?) -> Result<T, NetworkStackError>
 }
 
 public class Parser: ParserProtocol {
     let jsonDecoder = JSONDecoder()
-    public init() {
+    public init() {}
+
+    public func json<T: Decodable>(data: Data?) -> Result<T, NetworkStackError> {
+        guard let data = data else {
+            return .failure(NetworkStackError.dataMissing)
+        }
         
-    }
-    
-    public func json<T: Decodable>(data: Data, completion: @escaping ResultDecodableCallback<T>) {
-        do {
-            let result: T = try jsonDecoder.decode(T.self, from: data)
-            OperationQueue.main.addOperation {completion(.success(result))}
-        }catch {
-            OperationQueue.main.addOperation {completion(.failure(.paringError(error)))}
+        return Result { try jsonDecoder.decode(T.self, from: data) }.mapError { error in
+            NetworkStackError.paringError(error)
         }
     }
 }
