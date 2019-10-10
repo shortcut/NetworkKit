@@ -24,7 +24,7 @@ public extension URLRequest {
             let (key, value) = arg
             return "\(key)=\(self.percentEscapeString(value))"
         }
-
-        httpBody = parameterArray.joined(separator: "&").data(using: .utf8)
+        guard let data = parameterArray.joined(separator: "&").data(using: .utf8) else { return }
+        httpBody = data
     }
 }
