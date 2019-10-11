@@ -46,39 +46,47 @@ public extension Webservice {
 // MARK: - Requests
 
 public extension Webservice {
+    @discardableResult
     func request<T: Decodable>(withPath path: String,
                                method: HTTPMethod,
                                bodyType: HTTPBodyType = .none,
                                body: Encodable? = nil,
                                queryParameters query: QueryParameters? = nil,
-                               completion: @escaping ResultRequestCallback<T>) {
+                               completion: @escaping ResultRequestCallback<T>) -> Request {
         requestData(withPath: path, method: method, bodyType: bodyType,
                     body: body, queryParameters: query) { (request, urlResponse, result: Result<Data, NetworkStackError>) in
-                        
-                        let data = try? result.get()
-                        
-                        DispatchQueue.global(qos: .background).async {
-                            let decodeResult = self.parser.json(data: data) as Result<T, NetworkStackError>
-                        
-                            OperationQueue.main.addOperation {
-                                completion(Response<T, NetworkStackError>(request: request, response: urlResponse, data: data, result: decodeResult))
-                            }
-                        }
+
+            switch result {
+            case let .success(data):
+                DispatchQueue.global(qos: .background).async {
+                    let decodeResult = self.parser.json(data: data) as Result<T, NetworkStackError>
+
+                    OperationQueue.main.addOperation {
+                        completion(Response<T, NetworkStackError>(request: request, response: urlResponse, data: data, result: decodeResult))
+                    }
+                }
+            case let .failure(error):
+                OperationQueue.main.addOperation {
+                    completion(Response<T, NetworkStackError>(request: request, response: urlResponse, data: nil, result: .failure(error)))
+                }
+            }
         }
     }
 
+    @discardableResult
     func requestData(withPath path: String,
                      method: HTTPMethod,
                      bodyType: HTTPBodyType = .none,
                      body: Encodable? = nil,
                      queryParameters query: QueryParameters? = nil,
-                     completion: @escaping ResultDataCallback) {
+                     completion: @escaping ResultDataCallback) -> Request {
         guard let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body, queryParameters: query) else {
-            completion(nil, nil, .failure(.invalidURL))
-            return
+            let error = NetworkStackError.invalidURL
+            completion(nil, nil, .failure(error))
+            return Request(task: nil, error: error, request: nil, response: nil)
         }
 
-        perfomDataTask(withRequest: request) { (data, response, error) in
+        return perfomDataTask(withRequest: request) { data, response, error in
 
             if let error = error {
                 DispatchQueue.main.async {

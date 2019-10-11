@@ -59,3 +59,14 @@ public struct Response<Success, Failure: Error> {
         return error
     }
 }
+
+public struct Request {
+    var task: URLSessionTask?
+    var error: Error?
+    var request: URLRequest?
+    var response: URLResponse?
+
+    func cancel() {
+        task?.cancel()
+    }
+}
