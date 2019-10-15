@@ -64,11 +64,21 @@ public extension WebServiceProtocol {
 // MARK: URLSession Utility
 
 public extension WebServiceProtocol {
-    func perfomDataTask(withRequest request: URLRequest, completion: @escaping TaskCallback) {
+    func perfomDataTask(withRequest urlRequest: URLRequest, completion: @escaping TaskCallback) -> Request {
+        var request = Request(task: nil, error: nil, request: urlRequest, response: nil)
+
         networkActivity.increment()
-        urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: urlRequest, completionHandler: { data, response, error in
             self.networkActivity.decrement()
+            request.response = response
+            request.error = error
             completion(data, response, error)
-        }).resume()
+        })
+
+        task.resume()
+
+        request.task = task
+
+        return request
     }
 }

@@ -29,11 +29,11 @@ final class NetworkKitTests: XCTestCase {
 
         wait(for: [expectation], timeout: 3)
     }
-    
+
     func testGetDataRequestResponse() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        webService.requestData(withPath: "get", method: .get) { (request, response, result: Result<Data, NetworkStackError>) in
+        webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkStackError>) in
             switch result {
             case let .success(data):
                 XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
@@ -96,14 +96,14 @@ final class NetworkKitTests: XCTestCase {
 
         wait(for: [expectation], timeout: 3)
     }
-    
+
     func testGetRequestQueryParamsResponse() {
         let expectation = XCTestExpectation(description: "make get request with query parameters")
 
         let parameters = ["test": "Hello world",
                           "message": "cool",
                           "number": "23"]
-        
+
         webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, NetworkStackError>) in
             switch response.result {
             case let .success(httpBinResult):
@@ -120,7 +120,7 @@ final class NetworkKitTests: XCTestCase {
 
         wait(for: [expectation], timeout: 3)
     }
-    
+
     func testGet404Response() {
         let expectation = XCTestExpectation(description: "get a 404 status code")
 
@@ -137,5 +137,31 @@ final class NetworkKitTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 3)
+    }
+
+    func testCancelRequest() {
+        let expectation = XCTestExpectation(description: "cancel a request")
+
+        let request = webService.request(withPath: "delay/5", method: .get) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case .success:
+                XCTFail("the request should fail")
+            case let .failure(error):
+                XCTAssertNil(response.data)
+
+                guard case let .responseError(responseError) = error else {
+                    XCTFail("there should be an error")
+                    return
+                }
+
+                XCTAssertEqual((responseError as NSError).code, NSURLErrorCancelled)
+            }
+
+            expectation.fulfill()
+        }
+
+        request.cancel()
+
+        wait(for: [expectation], timeout: 5)
     }
 }

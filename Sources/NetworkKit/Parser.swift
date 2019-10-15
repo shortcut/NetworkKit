@@ -20,7 +20,7 @@ public class Parser: ParserProtocol {
         guard let data = data else {
             return .failure(NetworkStackError.dataMissing)
         }
-        
+
         return Result { try jsonDecoder.decode(T.self, from: data) }.mapError { error in
             NetworkStackError.paringError(error)
         }
