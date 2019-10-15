@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ProviderTests.swift
 //  
 //
 //  Created by Andre Navarro on 10/14/19.
@@ -15,8 +15,6 @@ enum HTTPBinService {
 }
 
 extension HTTPBinService: TargetType {
-    typealias ResponseType = HTTPBinResult
-
     static var baseURL: URL {
         URL(string: "https://httpbin.org/")!
     }
@@ -61,6 +59,16 @@ extension HTTPBinService: TargetType {
     var queryParameters: QueryParameters? {
         nil
     }
+    
+    var responseType: ResponseType {
+        switch self {
+        case .get:
+            return HTTPBinResult
+        case .getDelay:
+            return HTTPBinResult2
+        }
+        return HTTPBinResult
+    }
 }
 
 
@@ -73,6 +81,27 @@ final class ProviderTests: XCTestCase {
         provider.request(.get) { response in
             switch response.result {
             case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.url, "https://httpbin.org/get")
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 3)
+    }
+    
+    func testProviderGetOtherModel() {
+        let expectation = XCTestExpectation(description: "make get request")
+
+        let provider = Provider<HTTPBinService>()
+        provider.request(.getDelay(seconds: 1)) { response in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssert(response.value is HTTPBinResult2)
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
                 XCTAssertEqual(httpBinResult.url, "https://httpbin.org/get")
             case let .failure(error):

@@ -8,6 +8,10 @@ struct HTTPBinResult: Decodable {
     let json: [String: String]?
 }
 
+struct HTTPBinResult2: HTTPBinResult {
+    
+}
+
 final class NetworkKitTests: XCTestCase {
     private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
 

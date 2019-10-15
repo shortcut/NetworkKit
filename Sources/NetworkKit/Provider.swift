@@ -1,5 +1,5 @@
 //
-//  File 2.swift
+//  Provider.swift
 //  
 //
 //  Created by Andre Navarro on 10/14/19.
@@ -16,6 +16,7 @@ public protocol TargetType {
     var bodyType: HTTPBodyType { get }
     var body: Encodable? { get }
     var queryParameters: QueryParameters? { get }
+    var responseType: ResponseType { get }
 }
 
 public protocol ProviderType {
