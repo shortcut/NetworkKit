@@ -17,7 +17,7 @@ You manage your own retained WebService instance inside some network manager cla
         }
 
     }
-`
+```
 
 or if you need the data directly:
 
@@ -30,7 +30,7 @@ or if you need the data directly:
             print("error: \(error)")
         }
     }
-`
+```
 
 ## Response
 
@@ -50,14 +50,22 @@ public struct Response<Success, Failure: Error> {
         return error
     }
 }
-`
+```
 
 If you wanted to get the status code for example, you'd take it from:
 
 ```swift
 (response.response as? HTTPURLResponse)?.statusCode
-`
+```
 
 ## Cancel
 
 To cancel requests, hold on to the returned Request object from webService.request() and call cancel on that.
+
+```swift
+        let request = webService.request(withPath: "get", method: .get) { (response in 
+            ...
+        }
+
+        request.cancel()
+```
