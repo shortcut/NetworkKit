@@ -9,14 +9,14 @@
 import Foundation
 
 public protocol ParserProtocol {
-    func json<T: Decodable>(data: Data?) -> Result<T, NetworkStackError>
+    func parse<T: Decodable>(data: Data?) -> Result<T, NetworkStackError>
 }
 
-public class Parser: ParserProtocol {
-    let jsonDecoder = JSONDecoder()
-    public init() {}
+public class JSONParser: ParserProtocol {
+  let jsonDecoder = JSONDecoder()
+  public init(decoder: JSONDecoder = JSONDecoder()) {}
 
-    public func json<T: Decodable>(data: Data?) -> Result<T, NetworkStackError> {
+    public func parse<T: Decodable>(data: Data?) -> Result<T, NetworkStackError> {
         guard let data = data else {
             return .failure(NetworkStackError.dataMissing)
         }

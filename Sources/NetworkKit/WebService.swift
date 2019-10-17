@@ -18,7 +18,7 @@ public class Webservice: WebServiceProtocol {
     public init(baseURL: URL, headerValues: HTTPHeaders = [:],
                 urlSession: URLSession = URLSession(configuration: .default),
                 networkActivity: NetworkActivityProtocol = NetworkActivity(),
-                parser: ParserProtocol = Parser()) {
+                parser: ParserProtocol = JSONParser()) {
         self.baseURL = baseURL
         self.headerValues = headerValues
         self.urlSession = urlSession
@@ -59,7 +59,8 @@ public extension Webservice {
             switch result {
             case let .success(data):
                 DispatchQueue.global(qos: .background).async {
-                    let decodeResult = self.parser.json(data: data) as Result<T, NetworkStackError>
+                    
+                    let decodeResult = self.parser.parse(data: data) as Result<T, NetworkStackError>
 
                     OperationQueue.main.addOperation {
                         completion(Response<T, NetworkStackError>(request: request, response: urlResponse, data: data, result: decodeResult))

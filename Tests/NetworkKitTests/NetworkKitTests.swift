@@ -164,4 +164,10 @@ final class NetworkKitTests: XCTestCase {
 
         wait(for: [expectation], timeout: 5)
     }
+    
+    func testFuture() {
+//        webService.request(withPath: "get", method: .get).sink(receiveValue: { (result: Response<HTTPBinResult, NetworkStackError>) in
+//            print(result.data)
+//        })
+    }
 }

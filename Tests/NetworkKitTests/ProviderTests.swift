@@ -15,8 +15,6 @@ enum HTTPBinService {
 }
 
 extension HTTPBinService: TargetType {
-    typealias ResponseType = HTTPBinResult
-
     static var baseURL: URL {
         URL(string: "https://httpbin.org/")!
     }
@@ -31,7 +29,7 @@ extension HTTPBinService: TargetType {
             return "post"
         }
     }
-    
+
     var method: HTTPMethod {
         switch self {
         case .get:
@@ -70,7 +68,7 @@ final class ProviderTests: XCTestCase {
         let expectation = XCTestExpectation(description: "make get request")
 
         let provider = Provider<HTTPBinService>()
-        provider.request(.get) { response in
+        provider.request(.get) { (response: Response<HTTPBinResult, NetworkStackError>) in
             switch response.result {
             case let .success(httpBinResult):
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
@@ -90,7 +88,7 @@ final class ProviderTests: XCTestCase {
         let expectation = XCTestExpectation(description: "make post request")
 
         let provider = Provider<HTTPBinService>()
-        provider.request(.post(name: "Andre", age: "35")) { response in
+        provider.request(.post(name: "Andre", age: "35")) { (response: Response<HTTPBinResult, NetworkStackError>) in
             switch response.result {
             case let .success(httpBinResult):
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
@@ -112,7 +110,7 @@ final class ProviderTests: XCTestCase {
         let expectation = XCTestExpectation(description: "cancel a request")
 
         let provider = Provider<HTTPBinService>()
-        let request = provider.request(.getDelay(seconds: 3)) { response in
+        let request = provider.request(.getDelay(seconds: 3)) { (response: Response<HTTPBinResult, NetworkStackError>) in
             switch response.result {
             case .success:
                 XCTFail("the request should fail")

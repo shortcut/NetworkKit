@@ -8,18 +8,13 @@
 import Foundation
 
 public protocol TargetType {
-    associatedtype ResponseType: Decodable
-    
     static var baseURL: URL { get }
     var path: String { get }
     var method: HTTPMethod { get }
     var bodyType: HTTPBodyType { get }
     var body: Encodable? { get }
     var queryParameters: QueryParameters? { get }
-}
-
-public protocol ProviderType {
-    associatedtype Target
+    
 }
 
 public class Provider<Target: TargetType> {
@@ -28,7 +23,7 @@ public class Provider<Target: TargetType> {
     public init(headerValues: HTTPHeaders = [:],
                 urlSession: URLSession = URLSession(configuration: .default),
                 networkActivity: NetworkActivityProtocol = NetworkActivity(),
-                parser: ParserProtocol = Parser()) {
+                parser: ParserProtocol = JSONParser()) {
         
         webService = Webservice(baseURL: Target.baseURL,
                                 headerValues: headerValues,
@@ -38,8 +33,9 @@ public class Provider<Target: TargetType> {
     }
     
     @discardableResult
-    func request(_ target: Target,
-                 completion: @escaping ResultRequestCallback<Target.ResponseType>) -> Request{
+    public func request<T: Decodable>(_ target: Target,
+                                      completion: @escaping ResultRequestCallback<T>) -> Request {
+        
         return webService.request(withPath: target.path,
                                   method: target.method,
                                   bodyType: target.bodyType,
