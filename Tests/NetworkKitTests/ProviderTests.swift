@@ -14,6 +14,18 @@ enum HTTPBinService {
     case post(name: String, age: String)
 }
 
+enum HTTPBinUserService {
+    case getUsers
+    case getDelay(seconds: UInt)
+    case post(name: String, age: String)
+}
+
+enum HTTPBinUserImagesService {
+    case getUserImages
+    case getDelay(seconds: UInt)
+    case post(name: String, age: String)
+}
+
 extension HTTPBinService: TargetType {
     static var baseURL: URL {
         URL(string: "https://httpbin.org/")!
@@ -59,16 +71,26 @@ extension HTTPBinService: TargetType {
     var queryParameters: QueryParameters? {
         nil
     }
+    
+    var diskFileName: String {
+        return "getResponse.json"
+    }
 }
 
 
-final class ProviderTests: XCTestCase {
+final class ProviderTests: XCTestCase, URLSessionDataDelegate {
 
+    let provider = Provider<HTTPBinService>()
+    let diskProvider = Provider<HTTPBinService>(dataFetcher: DiskDataFetcher())
+
+    var dataFetcher: URLSessionDataFetcher<HTTPBinService>?
+    var delegatedProvider: Provider<HTTPBinService>?
+    var sessionDelegate: SessionDelegate?
+    
     func testProviderGet() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        let provider = Provider<HTTPBinService>()
-        provider.request(.get) { (response: Response<HTTPBinResult, NetworkStackError>) in
+        provider.request(.getUsers, typeSelector: HTTPBinTypeSelector()) { response in
             switch response.result {
             case let .success(httpBinResult):
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
@@ -87,8 +109,7 @@ final class ProviderTests: XCTestCase {
     func testProviderPost() {
         let expectation = XCTestExpectation(description: "make post request")
 
-        let provider = Provider<HTTPBinService>()
-        provider.request(.post(name: "Andre", age: "35")) { (response: Response<HTTPBinResult, NetworkStackError>) in
+        provider.request(.post(name: "Andre", age: "35"), typeSelector: HTTPBinTypeSelector()) { response in
             switch response.result {
             case let .success(httpBinResult):
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
@@ -109,8 +130,7 @@ final class ProviderTests: XCTestCase {
     func testProviderCancel() {
         let expectation = XCTestExpectation(description: "cancel a request")
 
-        let provider = Provider<HTTPBinService>()
-        let request = provider.request(.getDelay(seconds: 3)) { (response: Response<HTTPBinResult, NetworkStackError>) in
+        provider.request(.getDelay(seconds: 2), typeSelector: HTTPBinTypeSelector()) { response in
             switch response.result {
             case .success:
                 XCTFail("the request should fail")
@@ -127,9 +147,67 @@ final class ProviderTests: XCTestCase {
 
             expectation.fulfill()
         }
+  
+        //provider.cancel(.get)
         
-        request.cancel()
-
         wait(for: [expectation], timeout: 5)
+    }
+    
+    func testOneFlightForMultipleEqualRequests() {
+        sessionDelegate = SessionDelegate()
+        
+        dataFetcher = URLSessionDataFetcher<HTTPBinService>(urlSession: URLSession(configuration: .default, delegate: self, delegateQueue: nil), headers: [adf:aasdf])
+
+
+        dataFetcher.middle { request in
+            
+        }
+        
+        delegatedProvider = Provider<HTTPBinService>(dataFetcher: dataFetcher!)
+
+        
+        
+        delegatedProvider!.request(.getDelay(seconds: 3), typeSelector: HTTPBinTypeSelector()) { response in
+            print(response)
+        }
+        
+        delegatedProvider!.request(.getDelay(seconds: 3), typeSelector: HTTPBinTypeSelector()) { response in
+        }
+        
+        delegatedProvider!.request(.getDelay(seconds: 3), typeSelector: HTTPBinTypeSelector()) { response in
+        }
+        
+        delegatedProvider!.request(.getDelay(seconds: 3), typeSelector: HTTPBinTypeSelector()) { response in
+        }
+        
+        delegatedProvider!.request(.getDelay(seconds: 3), typeSelector: HTTPBinTypeSelector()) { response in
+        }
+        
+    }
+//
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        print("asdf")
+    }
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        print("asdf")
+    }
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+            print("asdf")
+    }
+
+    @available(iOS 10.0, *)
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        for metric in metrics.transactionMetrics {
+            print(metric)
+        }
+    }
+}
+
+class SessionDelegate: NSObject, URLSessionDataDelegate {
+    @available(iOS 10.0, *)
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        for metric in metrics.transactionMetrics {
+            print(metric)
+        }
     }
 }

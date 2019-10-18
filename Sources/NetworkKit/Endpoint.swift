@@ -6,7 +6,7 @@
 //  Copyright © 2019 Vikram. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public enum HTTPMethod: String {
     case get
@@ -26,13 +26,17 @@ public enum NetworkStackError: Error {
     case responseError(Error)
     case dataMissing
     case responseMissing
+    case errorResponse
+}
+
+public struct EmptyErrorResponse: Decodable {
 }
 
 public typealias HTTPHeaders = [String: String]
-public typealias ResultRequestCallback<T> = (Response<T, NetworkStackError>) -> Void
-public typealias ResultDecodableCallback<T> = (Result<T, NetworkStackError>) -> Void
+public typealias ResponseCallback<SuccessType, ErrorType> = (Response<SuccessType, ErrorType, NetworkStackError>) -> Void
 public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkStackError>) -> Void
-public typealias ResultStatusCodeCallBack = (Result<Int, NetworkStackError>) -> Void
+public typealias DataCallback = (URLRequest?, URLResponse?, Data?, NetworkStackError?) -> Void
+
 public typealias QueryParameters = [String: String]
 public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
 
@@ -48,15 +52,24 @@ public enum HTTPBodyType {
     case none
 }
 
-public struct Response<Success, Failure: Error> {
+public struct Response<SuccessType, ErrorType, Failure: Error> {
+    // hmmm
     public let request: URLRequest?
     public let response: URLResponse?
+
+    
     public let data: Data?
-    public let result: Result<Success, Failure>
-    public var value: Success? { return try? result.get() }
+    public let result: Result<SuccessType, Failure>
+    public var value: SuccessType? { return try? result.get() }
     public var error: Failure? {
         guard case let .failure(error) = result else { return nil }
         return error
+    }
+    public var errorResponse: ErrorType?
+    
+    public var statusCode: Int? {
+        guard let response = self.response as? HTTPURLResponse else { return nil }
+        return response.statusCode
     }
 }
 

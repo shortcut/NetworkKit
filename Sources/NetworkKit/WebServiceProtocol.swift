@@ -13,7 +13,6 @@ public protocol WebServiceProtocol {
     var headerValues: HTTPHeaders { get set }
     var urlSession: URLSession { get }
     var networkActivity: NetworkActivityProtocol { get }
-    var parser: ParserProtocol { get }
 }
 
 // MARK: Requet Utility
