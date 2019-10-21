@@ -11,7 +11,7 @@ import Foundation
 // run request middleware
 // make request
 // run response middleware
-// parse
+// parse if client wants
 // return
 
 typealias ClientResponse = (Response<Data, EmptyErrorResponse, NetworkStackError>) -> Void
@@ -21,6 +21,8 @@ protocol ClientType {
     func request(_ urlRequest: URLRequest, completion: @escaping ClientResponse)
     var requestMiddleware: [RequestMiddleware] { get }
     var responseMiddleware: [ResponseMiddleware] { get }
+    
+    // TODO: cancel
 }
 
 extension Response {
@@ -49,15 +51,23 @@ extension Response {
     }
 }
 
+protocol RequestMiddleware {
+    func massage(_ request: URLRequest, completion: @escaping (Result<URLRequest, NetworkStackError>) -> Void)
+}
+
+protocol ResponseMiddleware {
+    func massage<T, E>(_ response: Response<T, E, NetworkStackError>, completion: @escaping (Response<T, E, NetworkStackError>) -> Void)
+}
+
 class Client: ClientType {    
-    private static var dataFetcher: DataFetcher = URLSession2DataFetcher()
+    private static var dataFetcher: DataFetcher = URLSessionDataFetcher()
 
     public var requestMiddleware: [RequestMiddleware] = []
     public var responseMiddleware: [ResponseMiddleware] = []
     
     init() {}
     
-    init(dataFetcher: DataFetcher = URLSession2DataFetcher()) {
+    init(dataFetcher: DataFetcher = URLSessionDataFetcher()) {
         Self.dataFetcher = dataFetcher
     }
     
@@ -114,6 +124,7 @@ class Client: ClientType {
                 }
             }
             
+            // finally complete with the slutty Response touched by everyone
             DispatchQueue.main.async {
                 if let newError = middlewareError {
                     let newResponse = Response<Data, EmptyErrorResponse, NetworkStackError>(request: modifiedResponse.request, response: modifiedResponse.response, data: modifiedResponse.data, result: .failure(.middlewareError(newError)), errorResponse: nil)
