@@ -33,7 +33,6 @@ public typealias ResultRequestCallback<T> = (Response<T, NetworkStackError>) -> 
 public typealias ResultDecodableCallback<T> = (Result<T, NetworkStackError>) -> Void
 public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkStackError>) -> Void
 public typealias ResultStatusCodeCallBack = (Result<Int, NetworkStackError>) -> Void
-public typealias QueryParameters = [String: String]
 public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
 
 public enum ResponseType {
