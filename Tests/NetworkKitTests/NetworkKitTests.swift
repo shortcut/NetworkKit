@@ -8,6 +8,13 @@ struct HTTPBinResult: Decodable {
     let json: [String: String]?
 }
 
+struct HTTPBinArrayResult: Decodable {
+    let url: String
+    let form: [String: String]?
+    let args: [String: [String]]?
+    let json: [String: String]?
+}
+
 final class NetworkKitTests: XCTestCase {
     private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
 
@@ -104,7 +111,33 @@ final class NetworkKitTests: XCTestCase {
                           "message": "cool",
                           "number": "23"]
 
-        webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, NetworkStackError>) in
+        
+        webService.request(withPath: "get", method: .get, queryParameters: QueryParameters(parameters)) { (response: Response<HTTPBinResult, NetworkStackError>) in
+            switch response.result {
+            case let .success(httpBinResult):
+                XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
+                XCTAssertEqual(httpBinResult.args, parameters)
+
+            case let .failure(error):
+                XCTFail()
+                print("error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3)
+    }
+    
+    func testGetRequestQueryParamsOptions() {
+        let expectation = XCTestExpectation(description: "make get request with query parameters")
+
+        let parameters = ["number": ["23", "252", "12"]]
+
+        var query = QueryParameters(parameters)
+        query.arrayFormat = .duplicatedKeys
+        
+        webService.request(withPath: "get", method: .get, queryParameters: query) { (response: Response<HTTPBinArrayResult, NetworkStackError>) in
             switch response.result {
             case let .success(httpBinResult):
                 XCTAssertEqual((response.response as? HTTPURLResponse)?.statusCode, 200)
