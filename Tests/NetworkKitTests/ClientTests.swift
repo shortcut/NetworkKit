@@ -36,7 +36,7 @@ extension HTTPStatusService: TargetType {
         case .fiveHundred:
             return nil
         case let .twoHundred(delay):
-            return ["sleep": "\(delay)"]
+            return QueryParameters(["sleep": "\(delay)"])
         }
     }
 }
@@ -51,7 +51,12 @@ class LoggerRequestMiddleware: RequestMiddleware {
 
 class LoggerResponseMiddleware: ResponseMiddleware {
     func massage<T, E>(_ response: Response<T, E>, completion: @escaping (Response<T, E>) -> Void) {
-        print("RESPONSE MIDDLE LOGGING")
+        switch response.result {
+        case .success:
+            print("RESPONSE MIDDLE LOGGING \(String(data: response.data!, encoding: .utf8)!)")
+        case let .failure(error):
+            print("RESPONSE MIDDLE LOGGING ERROR: \(error)")
+        }
         completion(response)
     }
 }
@@ -71,10 +76,14 @@ class FailerResponseMiddleware: ResponseMiddleware {
 }
 
 
-
 final class ClientTests: XCTestCase {
     
-    var client: Client = { Client() }()
+    var client: Client = {
+        let client = Client()
+        client.requestMiddleware.append(LoggerRequestMiddleware())
+        client.responseMiddleware.append(LoggerResponseMiddleware())
+        return client
+    }()
     var diskClient: Client = { Client(dataFetcher: MockDataFetcher()) }()
     
     func testSuccessClient() {

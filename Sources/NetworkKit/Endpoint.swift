@@ -39,7 +39,6 @@ public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, N
 public typealias DataCallback = (URLRequest?, URLResponse?, Data?, NetworkStackError?) -> Void
 public typealias ResultRequestCallback<T> = (Response<T, EmptyErrorResponse>) -> Void
 
-public typealias QueryParameters = [String: String]
 public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
 
 public enum HTTPBodyType {

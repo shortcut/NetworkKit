@@ -19,6 +19,13 @@ struct TestErrorModel: Decodable {
     let code: Int
     let description: String
 }
+    
+struct HTTPBinArrayResult: Decodable {
+    let url: String
+    let form: [String: String]?
+    let args: [String: [String]]?
+    let json: [String: String]?
+}
 
 final class NetworkKitTests: XCTestCase {
     private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
@@ -129,7 +136,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "cool",
                           "number": "23"]
 
-        webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
+        webService.request(withPath: "get", method: .get, queryParameters: QueryParameters(parameters)) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
             
             XCTAssertTrue(Thread.isMainThread)
 
