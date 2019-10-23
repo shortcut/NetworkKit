@@ -63,12 +63,12 @@ public extension Webservice {
                     let decodeResult = self.parser.parse(data: data) as Result<T, NetworkStackError>
 
                     OperationQueue.main.addOperation {
-                        completion(Response<T, EmptyErrorResponse, NetworkStackError>(request: request, response: urlResponse, data: data, result: decodeResult, errorResponse: nil))
+                        completion(Response<T, EmptyErrorResponse>(request: request, response: urlResponse, data: data, result: decodeResult, errorResponse: nil))
                     }
                 }
             case let .failure(error):
                 OperationQueue.main.addOperation {
-                    completion(Response<T, EmptyErrorResponse, NetworkStackError>(request: request, response: urlResponse, data: nil, result: .failure(error), errorResponse: nil))
+                    completion(Response<T, EmptyErrorResponse>(request: request, response: urlResponse, data: nil, result: .failure(error), errorResponse: nil))
                 }
             }
         }
@@ -84,7 +84,7 @@ public extension Webservice {
         guard let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body, queryParameters: query) else {
             let error = NetworkStackError.invalidURL
             completion(nil, nil, .failure(error))
-            return Request(task: nil, error: error, request: nil, response: nil)
+            return Request()
         }
 
         return perfomDataTask(withRequest: request) { data, response, error in

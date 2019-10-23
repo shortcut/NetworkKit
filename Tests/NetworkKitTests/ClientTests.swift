@@ -14,17 +14,11 @@ enum HTTPStatusService {
 }
 
 extension HTTPStatusService: TargetType {
-    static var headerValues: HTTPHeaders? {
+    var headerValues: HTTPHeaders? {
         return ["Accept" : "application/json"]
     }
     
-    var additionalHeaderValues: HTTPHeaders? {
-        nil
-    }
-    
-    static var baseURL: URL {
-        URL(string: "https://httpstat.us/")!
-    }
+    var baseURL: URL { URL(string: "https://httpstat.us/")! }
     
     var path: String {
         switch self {
@@ -35,18 +29,8 @@ extension HTTPStatusService: TargetType {
         }
     }
 
-    var method: HTTPMethod {
-        .get
-    }
-    
-    var bodyType: HTTPBodyType {
-        .none
-    }
-    
-    var body: Encodable? {
-        nil
-    }
-    
+    var method: HTTPMethod { .get }
+
     var queryParameters: QueryParameters? {
         switch self {
         case .fiveHundred:
@@ -55,36 +39,33 @@ extension HTTPStatusService: TargetType {
             return ["sleep": "\(delay)"]
         }
     }
-    
-    var diskFileName: String {
-        return "getResponse.json"
-    }
 }
 
+
 class LoggerRequestMiddleware: RequestMiddleware {
-    func massage(_ request: URLRequest, completion: @escaping (Result<URLRequest, NetworkStackError>) -> Void) {
+    func massage(_ request: URLRequest, completion: @escaping (Result<URLRequest, NetworkStackError>, Response<Data, EmptyErrorResponse>?) -> Void) {
         print("REQUEST MIDDLE LOGGING: \(request) ")
-        completion(.success(request))
+        completion(.success(request), nil)
     }
 }
 
 class LoggerResponseMiddleware: ResponseMiddleware {
-    func massage<T, E>(_ response: Response<T, E, NetworkStackError>, completion: @escaping (Response<T, E, NetworkStackError>) -> Void) {
+    func massage<T, E>(_ response: Response<T, E>, completion: @escaping (Response<T, E>) -> Void) {
         print("RESPONSE MIDDLE LOGGING")
         completion(response)
     }
 }
 
 class FailerRequestMiddleware: RequestMiddleware {
-    func massage(_ request: URLRequest, completion: @escaping (Result<URLRequest, NetworkStackError>) -> Void) {
-        print("REQUEST MIDDLE LOGGING: \(request) ")
-        completion(.failure(.dataMissing))
+    func massage(_ request: URLRequest, completion: @escaping (Result<URLRequest, NetworkStackError>, Response<Data, EmptyErrorResponse>?) -> Void) {
+        print("REQUEST FAIL MIDDLE")
+        completion(.failure(.dataMissing), nil)
     }
 }
 
 class FailerResponseMiddleware: ResponseMiddleware {
-    func massage<T, E>(_ response: Response<T, E, NetworkStackError>, completion: @escaping (Response<T, E, NetworkStackError>) -> Void) {
-        print("FAILLLLL MIDDLE LOGGING")
+    func massage<T, E>(_ response: Response<T, E>, completion: @escaping (Response<T, E>) -> Void) {
+        print("RESPONSE FAIL MIDDLE")
         completion(Response(request: response.request, response: response.response, data: response.data, result: .failure(NetworkStackError.dataMissing), errorResponse: nil))
     }
 }
@@ -93,26 +74,22 @@ class FailerResponseMiddleware: ResponseMiddleware {
 
 final class ClientTests: XCTestCase {
     
-    var client: Client = Client()
+    var client: Client = { Client() }()
+    var diskClient: Client = { Client(dataFetcher: MockDataFetcher()) }()
     
-    override func setUp() {
-        client = Client()
-//        client.requestMiddleware.append(FailerRequestMiddleware())
-    }
-
     func testSuccessClient() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        self.client.request(HTTPStatusService.twoHundred(delay: 0)) { response in
-            
+        let request = HTTPStatusService.twoHundred(delay: 0).asURLRequest()!
+        self.client.request(request) { response in
             XCTAssertTrue(Thread.isMainThread)
 
-            response.mapJSON() { (response: Response<TestModel, TestErrorModel, NetworkStackError>) in
-                
+            response.mapDecodable() { (response: Response<TestModel, TestErrorModel>) in
                 XCTAssertTrue(Thread.isMainThread)
 
                 switch response.result {
                 case let .success(result):
+                    XCTAssertNotNil(URLCache.shared.cachedResponse(for: request))
                     XCTAssertEqual(response.statusCode, 200)
                     XCTAssertEqual(result.code, 200)
                 case let .failure(error):
@@ -129,9 +106,8 @@ final class ClientTests: XCTestCase {
     func testErrorClient() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        
         client.request(HTTPStatusService.fiveHundred) { response in
-            response.mapJSON() { (response: Response<TestModel, TestErrorModel, NetworkStackError>) in
+            response.mapDecodable() { (response: Response<TestModel, TestErrorModel>) in
                 
                 switch response.result {
                 case .success:
@@ -147,18 +123,38 @@ final class ClientTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
     }
     
-    func testFailingMiddleware() {
+    func testFailingRequestMiddleware() {
         let expectation = XCTestExpectation(description: "make get request")
         
-        client.responseMiddleware.append(FailerResponseMiddleware())
-
+        client.requestMiddleware.append(FailerRequestMiddleware())
         client.request(HTTPStatusService.twoHundred(delay: 0)) { response in
-            response.mapJSON() { (response: Response<TestModel, TestErrorModel, NetworkStackError>) in
+            response.mapDecodable() { (response: Response<TestModel, TestErrorModel>) in
                 
                 switch response.result {
                 case .success:
                     XCTFail()
                 case let .failure(error):
+                    print(error)
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testFailingResponseMiddleware() {
+        let expectation = XCTestExpectation(description: "make get request")
+        
+        client.responseMiddleware.append(FailerResponseMiddleware())
+        client.request(HTTPStatusService.twoHundred(delay: 0)) { response in
+            response.mapDecodable() { (response: Response<TestModel, TestErrorModel>) in
+                
+                switch response.result {
+                case .success:
+                    XCTFail()
+                case let .failure(error):
+                    
                     XCTAssertEqual(response.errorResponse?.code, 200)
                     print(error)
                 }

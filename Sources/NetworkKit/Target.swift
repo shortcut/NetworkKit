@@ -7,24 +7,9 @@
 
 import Foundation
 
-struct Target: TargetType {
-    static var baseURL: URL = URL(string: "test.com")!
-    
-    static var headerValues: HTTPHeaders?
-    
-    var path: String
-    
-    var method: HTTPMethod
-    var bodyType: HTTPBodyType
-    var body: Encodable?
-    var queryParameters: QueryParameters?
-    var additionalHeaderValues: HTTPHeaders?
-    var diskFileName: String
-}
-
 public protocol TargetType {
-    static var baseURL: URL { get }
-    static var headerValues: HTTPHeaders? { get }
+    var baseURL: URL { get }
+    var headerValues: HTTPHeaders? { get }
     
     var path: String { get }
     var method: HTTPMethod { get }
@@ -32,24 +17,32 @@ public protocol TargetType {
     var body: Encodable? { get }
     var queryParameters: QueryParameters? { get }
     var additionalHeaderValues: HTTPHeaders? { get }
-    var diskFileName: String { get }
+}
+
+// defaults
+extension TargetType {
+    var bodyType: HTTPBodyType {
+        get {.none}
+    }
+    var body: Encodable? {
+        get {nil}
+    }
+    var queryParameters: QueryParameters? {
+        get {nil}
+    }
+    var additionalHeaderValues: HTTPHeaders? {
+        get {nil}
+    }
 }
 
 extension TargetType {
     func asURLRequest() -> URLRequest? {
-        guard
-            var components = URLComponents(string: Self.baseURL.absoluteString + path)
-        else { return nil }
+        guard let url = self.asURL() else { return nil }
 
-        if let queryParameters = queryParameters {
-            components.setQueryItems(with: queryParameters)
-        }
-        guard let url = components.url else { return nil }
-        
         var request = URLRequest(url: url)
         request.httpMethod = method.value
 
-        if let headerValues = Self.headerValues {
+        if let headerValues = self.headerValues {
             headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }
         
@@ -69,5 +62,17 @@ extension TargetType {
         }
 
         return request
+    }
+    
+    private func asURL() -> URL? {
+        guard
+            var components = URLComponents(string: baseURL.absoluteString + path)
+        else { return nil }
+
+        if let queryParameters = queryParameters {
+            components.setQueryItems(with: queryParameters)
+        }
+        
+        return components.url
     }
 }

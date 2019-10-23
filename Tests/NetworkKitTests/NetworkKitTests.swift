@@ -27,7 +27,7 @@ final class NetworkKitTests: XCTestCase {
     func testGetRequestResponse() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
             
             XCTAssertTrue(Thread.isMainThread)
 
@@ -75,7 +75,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "øåæ",
                           "face": "🤓"]
 
-        webService.request(withPath: "post", method: .post, bodyType: .formEncoded(parameters: parameters)) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        webService.request(withPath: "post", method: .post, bodyType: .formEncoded(parameters: parameters)) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
 
             XCTAssertTrue(Thread.isMainThread)
 
@@ -102,7 +102,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "øåæ",
                           "face": "🤓"]
 
-        webService.request(withPath: "post", method: .post, bodyType: .json, body: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        webService.request(withPath: "post", method: .post, bodyType: .json, body: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
 
             XCTAssertTrue(Thread.isMainThread)
 
@@ -129,7 +129,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "cool",
                           "number": "23"]
 
-        webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        webService.request(withPath: "get", method: .get, queryParameters: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
             
             XCTAssertTrue(Thread.isMainThread)
 
@@ -152,7 +152,7 @@ final class NetworkKitTests: XCTestCase {
     func testGet404Response() {
         let expectation = XCTestExpectation(description: "get a 404 status code")
 
-        webService.request(withPath: "status/404", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        webService.request(withPath: "status/404", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
             
             XCTAssertTrue(Thread.isMainThread)
 
@@ -173,7 +173,7 @@ final class NetworkKitTests: XCTestCase {
     func testCancelRequest() {
         let expectation = XCTestExpectation(description: "cancel a request")
 
-        let request = webService.request(withPath: "delay/5", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse, NetworkStackError>) in
+        let request = webService.request(withPath: "delay/5", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
             switch response.result {
             case .success:
                 XCTFail("the request should fail")

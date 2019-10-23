@@ -64,7 +64,7 @@ public extension WebServiceProtocol {
 
 public extension WebServiceProtocol {
     func perfomDataTask(withRequest urlRequest: URLRequest, completion: @escaping TaskCallback) -> Request {
-        var request = Request(task: nil, error: nil, request: urlRequest, response: nil)
+        var request = Request()
 
         networkActivity.increment()
         let task = urlSession.dataTask(with: urlRequest, completionHandler: { data, response, error in
