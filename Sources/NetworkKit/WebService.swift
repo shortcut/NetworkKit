@@ -52,23 +52,29 @@ public extension Webservice {
                                bodyType: HTTPBodyType = .none,
                                body: Encodable? = nil,
                                queryParameters query: QueryParameters? = nil,
-                               completion: @escaping ResultRequestCallback<T>) -> Request {
-        requestData(withPath: path, method: method, bodyType: bodyType,
-                    body: body, queryParameters: query) { (request, urlResponse, result: Result<Data, NetworkStackError>) in
+                               completion: @escaping ResultRequestCallback<T>) -> TaskIdentifier? {
+        requestData(withPath: path,
+                    method: method,
+                    bodyType: bodyType,
+                    body: body,
+                    queryParameters: query) { (request, urlResponse, result: Result<Data, NetworkStackError>) in
 
             switch result {
             case let .success(data):
                 DispatchQueue.global(qos: .background).async {
-                    
+
                     let decodeResult = self.parser.parse(data: data) as Result<T, NetworkStackError>
 
                     OperationQueue.main.addOperation {
-                        completion(Response<T, EmptyErrorResponse>(request: request, response: urlResponse, data: data, result: decodeResult, errorResponse: nil))
+                        completion(Response<T>(request: request,
+                                               response: urlResponse,
+                                               data: data,
+                                               result: decodeResult))
                     }
                 }
             case let .failure(error):
                 OperationQueue.main.addOperation {
-                    completion(Response<T, EmptyErrorResponse>(request: request, response: urlResponse, data: nil, result: .failure(error), errorResponse: nil))
+                    completion(Response<T>(request: request, response: urlResponse, data: nil, result: .failure(error)))
                 }
             }
         }
@@ -80,11 +86,15 @@ public extension Webservice {
                      bodyType: HTTPBodyType = .none,
                      body: Encodable? = nil,
                      queryParameters query: QueryParameters? = nil,
-                     completion: @escaping ResultDataCallback) -> Request {
-        guard let request = buildRequest(withPath: path, method: method, bodyType: bodyType, body: body, queryParameters: query) else {
+                     completion: @escaping ResultDataCallback) -> TaskIdentifier? {
+        guard let request = buildRequest(withPath: path,
+                                         method: method,
+                                         bodyType: bodyType,
+                                         body: body,
+                                         queryParameters: query) else {
             let error = NetworkStackError.invalidURL
             completion(nil, nil, .failure(error))
-            return Request()
+            return nil
         }
 
         return perfomDataTask(withRequest: request) { data, response, error in
@@ -106,6 +116,23 @@ public extension Webservice {
             DispatchQueue.main.async {
                 completion(request, response, .success(data))
             }
+        }
+    }
+}
+
+extension Webservice {
+    public func cancelTask(with identifier: TaskIdentifier?) {
+        urlSession.getAllTasks { tasks in
+            tasks.filter { $0.taskIdentifier == identifier }
+                .forEach { task in
+                task.cancel()
+            }
+        }
+    }
+
+    public func cancelAllTasks() {
+        urlSession.getAllTasks { tasks in
+            tasks.forEach { $0.cancel() }
         }
     }
 }

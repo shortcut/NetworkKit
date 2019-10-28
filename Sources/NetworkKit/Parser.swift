@@ -15,14 +15,14 @@ public protocol ParserProtocol {
 public class JSONParser: ParserProtocol {
     let jsonDecoder = JSONDecoder()
     public init(decoder: JSONDecoder = JSONDecoder()) {}
-    
-    public func parse<T>(data: Data?) -> Result<T, NetworkStackError> where T : Decodable {
+
+    public func parse<T>(data: Data?) -> Result<T, NetworkStackError> where T: Decodable {
         guard let data = data else {
             return .failure(NetworkStackError.dataMissing)
         }
-        
+
         return Result { try jsonDecoder.decode(T.self, from: data) }.mapError { error in
-            NetworkStackError.paringError(error)
+            NetworkStackError.parsingError(error)
         }
     }
 }

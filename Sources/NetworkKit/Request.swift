@@ -1,5 +1,5 @@
 //
-//  Target.swift
+//  Request.swift
 //  
 //
 //  Created by Andre Navarro on 10/21/19.
@@ -7,10 +7,10 @@
 
 import Foundation
 
-public protocol TargetType {
+public protocol RequestType {
     var baseURL: URL { get }
     var headerValues: HTTPHeaders? { get }
-    
+
     var path: String { get }
     var method: HTTPMethod { get }
     var bodyType: HTTPBodyType { get }
@@ -20,22 +20,15 @@ public protocol TargetType {
 }
 
 // defaults
-extension TargetType {
-    var bodyType: HTTPBodyType {
-        get {.none}
-    }
-    var body: Encodable? {
-        get {nil}
-    }
-    var queryParameters: QueryParameters? {
-        get {nil}
-    }
-    var additionalHeaderValues: HTTPHeaders? {
-        get {nil}
-    }
+extension RequestType {
+    var bodyType: HTTPBodyType { .none }
+    var body: Encodable? { nil }
+    var queryParameters: QueryParameters? { nil }
+    var headerValues: HTTPHeaders? { nil }
+    var additionalHeaderValues: HTTPHeaders? { nil }
 }
 
-extension TargetType {
+extension RequestType {
     func asURLRequest() -> URLRequest? {
         guard let url = self.asURL() else { return nil }
 
@@ -45,11 +38,11 @@ extension TargetType {
         if let headerValues = self.headerValues {
             headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }
-        
+
         if let headerValues = additionalHeaderValues {
             headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }
-        
+
         switch bodyType {
         case .none:
             break
@@ -63,7 +56,7 @@ extension TargetType {
 
         return request
     }
-    
+
     private func asURL() -> URL? {
         guard
             var components = URLComponents(string: baseURL.absoluteString + path)
@@ -72,7 +65,7 @@ extension TargetType {
         if let queryParameters = queryParameters {
             components.setQueryItems(with: queryParameters)
         }
-        
+
         return components.url
     }
 }

@@ -34,17 +34,17 @@ public struct QueryParameters {
 
     // input dictionary
     public var queryDictionary: [String: Any]
-    
+
     public init(_ queryDictionary: [String: Any]) {
         self.queryDictionary = queryDictionary
     }
-    
+
     public var queryItems: [URLQueryItem] {
         return queryDictionary.flatMap { kvp in
             queryItemsFrom(parameter: (kvp.key, kvp.value))
         }
     }
-    
+
     private func queryItemsFrom(parameter: (String, Any)) -> [URLQueryItem] {
         let name = parameter.0
         var value: String?
@@ -56,19 +56,16 @@ public struct QueryParameters {
         }
         if let parameterValue = parameter.1 as? String {
             value = parameterValue
-        }
-        else if let parameterValue = parameter.1 as? NSNumber {
+        } else if let parameterValue = parameter.1 as? NSNumber {
             value = parameterValue.stringValue
-        }
-        else if parameter.1 is NSNull {
+        } else if parameter.1 is NSNull {
             value = nil
-        }
-        else {
+        } else {
             value = "\(parameter.1)"
         }
         return [URLQueryItem(name: name, value: value)]
     }
-    
+
     private func queryItemsFrom(arrayParameter parameter: (String, [Any])) -> [URLQueryItem] {
         let key = parameter.0
         let value = parameter.1
@@ -84,7 +81,7 @@ public struct QueryParameters {
             return [URLQueryItem(name: key, value: queryItemValue)]
         }
     }
-    
+
     private func queryItemsFrom(dictionaryParameter parameter: (String, [String: Any])) -> [URLQueryItem] {
         let key = parameter.0
         let value = parameter.1

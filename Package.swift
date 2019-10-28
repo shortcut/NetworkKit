@@ -5,12 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "NetworkKit",
+    platforms: [.iOS("9.0")],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "NetworkKit",
             targets: ["NetworkKit"]
-        ),
+        )
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -26,6 +27,6 @@ let package = Package(
         .testTarget(
             name: "NetworkKitTests",
             dependencies: ["NetworkKit"]
-        ),
+        )
     ]
 )

@@ -9,17 +9,19 @@ import Foundation
 import NetworkKit
 
 public struct MockDataFetcher: DataFetcher {
-    public func fetchRequest(_ request: URLRequest, completion: @escaping DataCallback) {
+    public func fetchRequest(_ request: URLRequest, completion: @escaping DataCallback) -> TaskIdentifier? {
         if let data = Resource(name: "getResponse", type: "json").data {
             completion(nil, nil, data, nil)
+        } else {
+            completion(nil, nil, nil, NetworkStackError.dataMissing)
         }
-        else {
-            completion(nil, nil, nil, .dataMissing)
-        }
-    }
-    public func cancelAllRequests() {
+        
+        return nil
     }
     
-    public func cancelRequest(_ request: URLRequest) {
+    public func cancelRequest(with identifier: TaskIdentifier) {
+    }
+    
+    public func cancelAllRequests() {
     }
 }

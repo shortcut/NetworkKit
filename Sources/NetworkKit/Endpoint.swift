@@ -20,24 +20,23 @@ public enum HTTPMethod: String {
 }
 
 public enum NetworkStackError: Error {
-    case requestIsMissing
-    case paringError(Error)
     case invalidURL
+    case parsingError(Error)
     case responseError(Error)
     case dataMissing
     case responseMissing
-    case errorResponse
+    case errorResponse(Decodable?)
     case middlewareError(Error)
 }
 
-public struct EmptyErrorResponse: Decodable {
+public class EmptyErrorResponse: Decodable {
 }
 
 public typealias HTTPHeaders = [String: String]
-public typealias ResponseCallback<SuccessType, ErrorType> = (Response<SuccessType, ErrorType>) -> Void
+public typealias ResponseCallback<SuccessType> = (Response<SuccessType>) -> Void
 public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkStackError>) -> Void
-public typealias DataCallback = (URLRequest?, URLResponse?, Data?, NetworkStackError?) -> Void
-public typealias ResultRequestCallback<T> = (Response<T, EmptyErrorResponse>) -> Void
+public typealias DataCallback = (URLRequest?, URLResponse?, Data?, Error?) -> Void
+public typealias ResultRequestCallback<T> = (Response<T>) -> Void
 
 public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
 
@@ -48,59 +47,120 @@ public enum HTTPBodyType {
 }
 
 public protocol ResponseSuccessSelector {
-    func isSuccess<SuccessType, ErrorResponseType>(_ response: Response<SuccessType, ErrorResponseType>) -> Bool
+    func isSuccess<SuccessType>(_ response: Response<SuccessType>) -> Bool
 }
 
 public struct DefaultResponseSuccessSelector: ResponseSuccessSelector {
     public init() {}
-    public func isSuccess<SuccessType, ErrorResponseType>(_ response: Response<SuccessType, ErrorResponseType>) -> Bool {
+    public func isSuccess<SuccessType>(_ response: Response<SuccessType>) -> Bool {
         if case .failure = response.result {
             return false
         }
-        
+
         if let statusCode = response.statusCode, statusCode < 400 {
             return true
-        }
-        else {
+        } else {
             return false
         }
     }
 }
 
-public struct Response<SuccessType, ErrorResponseType> {
+public struct Response<SuccessType> {
     public let request: URLRequest?
     public let response: URLResponse?
 
     public var data: Data?
     public var result: Result<SuccessType, NetworkStackError>
 
-    public var errorResponse: ErrorResponseType?
-
     public var statusCode: Int? {
         guard let response = self.response as? HTTPURLResponse else { return nil }
         return response.statusCode
     }
-    
+
     public func localizedStringForStatusCode() -> String? {
         guard let statusCode = self.statusCode else { return nil }
         return HTTPURLResponse.localizedString(forStatusCode: statusCode)
     }
 
-    public var allHeaderFields: [AnyHashable : Any]? {
+    public var allHeaderFields: [AnyHashable: Any]? {
         guard let response = self.response as? HTTPURLResponse else { return nil }
         return response.allHeaderFields
     }
 }
 
-public struct Request {
-    var task: URLSessionTask?
-    var error: Error?
-    var request: URLRequest?
-    var response: URLResponse?
+extension Response {
+    public func mapDecodable<SuccessType: Decodable>(
+        parser: ParserProtocol = JSONParser(),
+        successSelector: ResponseSuccessSelector = DefaultResponseSuccessSelector(),
+        completion: @escaping (Response<SuccessType>) -> Void) {
 
-    public func cancel() {
-        task?.cancel()
+        DispatchQueue.global(qos: .background).async {
+            var newResponse: Response<SuccessType>
+
+            if successSelector.isSuccess(self) {
+                let result = parser.parse(data: self.data) as Result<SuccessType, NetworkStackError>
+                newResponse = .init(request: self.request, response: self.response, data: self.data, result: result)
+            } else {
+                var error: NetworkStackError = .errorResponse(nil)
+                if case let .failure(originalError) = self.result {
+                    error = originalError
+                }
+                newResponse = .init(request: self.request,
+                                    response: self.response,
+                                    data: self.data,
+                                    result: .failure(error))
+            }
+
+            DispatchQueue.main.async {
+                completion(newResponse)
+            }
+        }
+
     }
-    
-    public init() {}
+
+    public func mapDecodableWithError<SuccessType: Decodable, ErrorResponseType: Decodable>(
+        parser: ParserProtocol = JSONParser(),
+        successSelector: ResponseSuccessSelector = DefaultResponseSuccessSelector(),
+        errorResponseType: ErrorResponseType.Type,
+        completion: @escaping (Response<SuccessType>) -> Void) {
+
+        DispatchQueue.global(qos: .background).async {
+            var newResponse: Response<SuccessType>
+
+            if successSelector.isSuccess(self) {
+                let result = parser.parse(data: self.data) as Result<SuccessType, NetworkStackError>
+                newResponse = .init(request: self.request, response: self.response, data: self.data, result: result)
+            } else {
+                let errorResult = parser.parse(data: self.data) as Result<ErrorResponseType, NetworkStackError>
+                newResponse = .init(request: self.request,
+                                    response: self.response,
+                                    data: self.data,
+                                    result: .failure(.errorResponse(try? errorResult.get())))
+            }
+
+            DispatchQueue.main.async {
+                completion(newResponse)
+            }
+        }
+    }
+
+    public func mapString(successSelector: ResponseSuccessSelector = DefaultResponseSuccessSelector(),
+                          completion: @escaping (Response<String>) -> Void) {
+        DispatchQueue.global(qos: .background).async {
+            guard let data = self.data,
+                let string = String(data: data, encoding: .utf8) else {
+
+                return
+            }
+
+            let newResponse = Response<String>(request: self.request,
+                                               response: self.response,
+                                               data: self.data,
+                                               result: .success(string))
+
+            DispatchQueue.main.async {
+                completion(newResponse)
+            }
+        }
+    }
 }

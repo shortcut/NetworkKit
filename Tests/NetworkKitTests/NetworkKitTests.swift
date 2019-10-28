@@ -10,16 +10,6 @@ struct HTTPBinResult: Decodable {
     let json: [String: String]?
 }
 
-struct TestModel: Decodable {
-    let code: Int
-    let description: String
-}
-
-struct TestErrorModel: Decodable {
-    let code: Int
-    let description: String
-}
-    
 struct HTTPBinArrayResult: Decodable {
     let url: String
     let form: [String: String]?
@@ -30,12 +20,11 @@ struct HTTPBinArrayResult: Decodable {
 final class NetworkKitTests: XCTestCase {
     private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
 
-    
     func testGetRequestResponse() {
         let expectation = XCTestExpectation(description: "make get request")
 
-        webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
-            
+        webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult>) in
+
             XCTAssertTrue(Thread.isMainThread)
 
             switch response.result {
@@ -57,7 +46,7 @@ final class NetworkKitTests: XCTestCase {
         let expectation = XCTestExpectation(description: "make get request")
 
         webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkStackError>) in
-            
+
             XCTAssertTrue(Thread.isMainThread)
 
             switch result {
@@ -82,7 +71,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "øåæ",
                           "face": "🤓"]
 
-        webService.request(withPath: "post", method: .post, bodyType: .formEncoded(parameters: parameters)) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
+        webService.request(withPath: "post", method: .post, bodyType: .formEncoded(parameters: parameters)) { (response: Response<HTTPBinResult>) in
 
             XCTAssertTrue(Thread.isMainThread)
 
@@ -109,7 +98,7 @@ final class NetworkKitTests: XCTestCase {
                           "message": "øåæ",
                           "face": "🤓"]
 
-        webService.request(withPath: "post", method: .post, bodyType: .json, body: parameters) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
+        webService.request(withPath: "post", method: .post, bodyType: .json, body: parameters) { (response: Response<HTTPBinResult>) in
 
             XCTAssertTrue(Thread.isMainThread)
 
@@ -136,8 +125,8 @@ final class NetworkKitTests: XCTestCase {
                           "message": "cool",
                           "number": "23"]
 
-        webService.request(withPath: "get", method: .get, queryParameters: QueryParameters(parameters)) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
-            
+        webService.request(withPath: "get", method: .get, queryParameters: QueryParameters(parameters)) { (response: Response<HTTPBinResult>) in
+
             XCTAssertTrue(Thread.isMainThread)
 
             switch response.result {
@@ -159,8 +148,8 @@ final class NetworkKitTests: XCTestCase {
     func testGet404Response() {
         let expectation = XCTestExpectation(description: "get a 404 status code")
 
-        webService.request(withPath: "status/404", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
-            
+        webService.request(withPath: "status/404", method: .get) { (response: Response<HTTPBinResult>) in
+
             XCTAssertTrue(Thread.isMainThread)
 
             switch response.result {
@@ -180,7 +169,7 @@ final class NetworkKitTests: XCTestCase {
     func testCancelRequest() {
         let expectation = XCTestExpectation(description: "cancel a request")
 
-        let request = webService.request(withPath: "delay/5", method: .get) { (response: Response<HTTPBinResult, EmptyErrorResponse>) in
+        let taskId = webService.request(withPath: "delay/5", method: .get) { (response: Response<HTTPBinResult>) in
             switch response.result {
             case .success:
                 XCTFail("the request should fail")
@@ -198,8 +187,8 @@ final class NetworkKitTests: XCTestCase {
             expectation.fulfill()
         }
 
-        request.cancel()
-
+        webService.cancelTask(with: taskId!)
+        
         wait(for: [expectation], timeout: 5)
     }
 }

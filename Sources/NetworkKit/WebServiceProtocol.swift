@@ -8,6 +8,8 @@
 
 import Foundation
 
+public typealias TaskIdentifier = Int
+
 public protocol WebServiceProtocol {
     var baseURL: URL { get set }
     var headerValues: HTTPHeaders { get set }
@@ -63,21 +65,15 @@ public extension WebServiceProtocol {
 // MARK: URLSession Utility
 
 public extension WebServiceProtocol {
-    func perfomDataTask(withRequest urlRequest: URLRequest, completion: @escaping TaskCallback) -> Request {
-        var request = Request()
-
+    func perfomDataTask(withRequest urlRequest: URLRequest, completion: @escaping TaskCallback) -> TaskIdentifier? {
         networkActivity.increment()
         let task = urlSession.dataTask(with: urlRequest, completionHandler: { data, response, error in
             self.networkActivity.decrement()
-            request.response = response
-            request.error = error
             completion(data, response, error)
         })
 
         task.resume()
 
-        request.task = task
-
-        return request
+        return task.taskIdentifier
     }
 }

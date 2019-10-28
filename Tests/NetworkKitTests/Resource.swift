@@ -30,10 +30,10 @@ class Resource {
 extension Resource {
     var data: Data? {
         guard let url = URL(string: path) else { return nil }
-        
+
         return try? Data(contentsOf: url)
     }
-    
+
     var content: String? {
         return try? String(contentsOfFile: path).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
