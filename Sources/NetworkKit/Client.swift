@@ -66,14 +66,9 @@ public class Client: ClientType {
         var modifiedRequest = urlRequest
         var middlewareError: Error?
 
-        // walk along the middleware pipeline and let them modify the request
-        for middle in requestMiddleware {
-            let middleResponse = middle.prepare(modifiedRequest)
-            modifiedRequest = middleResponse.0
-            if case let .failure(error) = middleResponse.1?.result {
-                middlewareError = error
-                break
-            }
+        processRequestMiddleware(urlRequest: urlRequest) { (request, error) in
+            modifiedRequest = request
+            middlewareError = error
         }
 
         // return early if any middleware errored
@@ -91,18 +86,13 @@ public class Client: ClientType {
                 .failure(.responseError(error ?? NetworkStackError.dataMissing)))
 
             var modifiedResponse = Response<Data>(request: request, response: response, data: data, result: result)
-            var middlewareError: Error?
 
-            // walk along the middleware pipeline and let them modify the response
-            for middle in self.responseMiddleware {
-                modifiedResponse = middle.prepare(modifiedResponse)
-                if case let .failure(newError) = modifiedResponse.result {
-                    middlewareError = newError
-                    break
-                }
+            self.processResponseMiddleware(response: modifiedResponse) { (newResponse, newError) in
+                modifiedResponse = newResponse
+                middlewareError = newError
             }
 
-            // finally complete with the slutty Response touched by everyone
+            // finally complete to the user with the Response touched by everyone
             DispatchQueue.main.async {
                 if let newError = middlewareError {
                     let newResponse = Response<Data>(request: modifiedResponse.request,
@@ -115,5 +105,41 @@ public class Client: ClientType {
                 }
             }
         }
+    }
+
+    private func processRequestMiddleware(urlRequest: URLRequest, completion: @escaping (URLRequest, Error?) -> Void) {
+        var modifiedRequest = urlRequest
+        var middlewareError: Error?
+
+        // walk along the middleware pipeline and let them modify the request
+        for middle in requestMiddleware {
+            let middleResponse = middle.prepare(modifiedRequest)
+            modifiedRequest = middleResponse.0
+            if case let .failure(error) = middleResponse.1?.result {
+                middlewareError = error
+                break
+            }
+        }
+
+        completion(modifiedRequest, middlewareError)
+    }
+
+    private func processResponseMiddleware(
+        response: Response<Data>,
+        completion: @escaping (Response<Data>, Error?) -> Void) {
+
+        var middlewareError: Error?
+        var modifiedResponse: Response<Data> = response
+
+        // walk along the middleware pipeline and let them modify the response
+        for middle in self.responseMiddleware {
+            modifiedResponse = middle.prepare(modifiedResponse)
+            if case let .failure(newError) = modifiedResponse.result {
+                middlewareError = newError
+                break
+            }
+        }
+
+        completion(modifiedResponse, middlewareError)
     }
 }

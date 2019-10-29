@@ -19,6 +19,12 @@ final class ClientTests: XCTestCase {
     }()
     var diskClient: Client = { Client(dataFetcher: MockDataFetcher()) }()
 
+    override func setUp() {
+        super.setUp()
+        client.requestMiddleware = []
+        client.responseMiddleware = []
+    }
+    
     func testSuccessClient() {
         let expectation = XCTestExpectation(description: "should make a sucessful get request and decode the response")
 
@@ -125,6 +131,51 @@ final class ClientTests: XCTestCase {
 
         wait(for: [expectation], timeout: 5)
     }
+    
+    func testInvalidURL() {
+        let expectation = XCTestExpectation(description: "should fail because invalid url")
+
+        client.perform(URLRequest(url: URL(string: "lolwat")!)) { response in
+            response.mapDecodable { (response: Response<TestModel>) in
+
+                switch response.result {
+                case .success:
+                    XCTFail()
+                case let .failure(error):
+                    print(error)
+                    expectation.fulfill()
+                }
+            }
+        }
+
+        wait(for: [expectation], timeout: 5)
+    }
+    
+    func testCancelRequest() {
+        let expectation = XCTestExpectation(description: "should cancel a request")
+
+        let taskId = self.client.perform(HTTPStatusService.twoHundred(delay: 5)) { response in
+            switch response.result {
+            case .success:
+                XCTFail("the request should fail")
+            case let .failure(error):
+                XCTAssertNil(response.data)
+
+                guard case let .responseError(responseError) = error else {
+                    XCTFail("there should be an error")
+                    return
+                }
+
+                XCTAssertEqual((responseError as NSError).code, NSURLErrorCancelled)
+            }
+
+            expectation.fulfill()
+        }
+
+        self.client.cancelRequest(with: taskId!)
+        
+        wait(for: [expectation], timeout: 5)
+    }
 }
 
 struct TestModel: Decodable {
@@ -143,9 +194,7 @@ enum HTTPStatusService {
 }
 
 extension HTTPStatusService: RequestType {
-    var headerValues: HTTPHeaders? {
-        return ["Accept": "application/json"]
-    }
+    var headerValues: HTTPHeaders? { ["Accept": "application/json"] }
 
     var baseURL: URL { URL(string: "https://httpstat.us/")! }
 
@@ -172,7 +221,8 @@ extension HTTPStatusService: RequestType {
 
 class LoggerRequestMiddleware: RequestMiddleware {
     func prepare(_ request: URLRequest) -> (URLRequest, Response<Data>?) {
-        (request, nil)
+        print("REQUEST MIDDLE LOGGING: \(request)")
+        return (request, nil)
     }
 }
 

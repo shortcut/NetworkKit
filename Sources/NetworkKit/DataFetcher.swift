@@ -42,13 +42,7 @@ public class URLSessionDataFetcher: DataFetcher {
     public func fetchRequest(_ request: URLRequest, completion: @escaping DataCallback) -> TaskIdentifier? {
         let task = urlSession.dataTask(with: request, completionHandler: { [weak self] data, response, error in
             self?.networkActivity.decrement()
-
-            var possibleError: NetworkStackError?
-            if let error = error {
-                possibleError = .responseError(error)
-            }
-
-            completion(request, response, data, possibleError)
+            completion(request, response, data, error)
         })
 
         task.resume()

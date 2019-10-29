@@ -30,12 +30,12 @@ extension RequestType {
 
 extension RequestType {
     func asURLRequest() -> URLRequest? {
-        guard let url = self.asURL() else { return nil }
+        guard let url = asURL() else { return nil }
 
         var request = URLRequest(url: url)
         request.httpMethod = method.value
 
-        if let headerValues = self.headerValues {
+        if let headerValues = headerValues {
             headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }
 
