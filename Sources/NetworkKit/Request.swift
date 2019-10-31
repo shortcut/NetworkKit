@@ -151,6 +151,8 @@ class URLSessionDataRequest: NSObject, Request {
         }
 
         operationQueue.isSuspended = false
+        
+        task = nil
     }
 
     private func responseWithResult<ParsedObject>(_ result: Result<ParsedObject, NetworkStackError>) -> Response<ParsedObject> {

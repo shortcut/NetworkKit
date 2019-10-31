@@ -62,14 +62,17 @@ class MockNetwork: NetworkType {
 }
 
 class Network: NSObject, NetworkType {
-    var sessionDelegate: NetworkSessionDelegate
-    var urlSession: URLSession
+    var sessionDelegate: NetworkSessionDelegate?
+    var urlSession: URLSession?
     var cacheProvider: CacheProvider
     
     deinit {
         print("deallocated Network!")
-        urlSession.invalidateAndCancel()
+        urlSession?.invalidateAndCancel()
+        sessionDelegate = nil
+        urlSession = nil
     }
+    
     init(urlSessionConfiguration: URLSessionConfiguration = .default, cacheProvider: CacheProvider = NSCacheProvider()) {
         self.cacheProvider = cacheProvider
         self.sessionDelegate = NetworkSessionDelegate()
@@ -77,12 +80,12 @@ class Network: NSObject, NetworkType {
     }
     
     func request(_ urlRequest: URLRequest?) -> Request {
-        let ourRequest = URLSessionDataRequest(urlSession: urlSession,
+        let ourRequest = URLSessionDataRequest(urlSession: urlSession!,
                                                urlRequest: urlRequest,
                                                cacheProvider: cacheProvider)
         
         if let taskId = ourRequest.task?.taskIdentifier {
-            self.sessionDelegate.tasks[taskId] = ourRequest
+            self.sessionDelegate?.tasks[taskId] = ourRequest
         }
         return ourRequest
     }
@@ -94,6 +97,7 @@ class NetworkSessionDelegate: NSObject, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let request = tasks[task.taskIdentifier] {
             request.urlSession(session, task: task, didCompleteWithError: error)
+            tasks[task.taskIdentifier] = nil
         }
     }
 
