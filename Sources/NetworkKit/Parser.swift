@@ -8,6 +8,50 @@
 
 import Foundation
 
+enum ParserError: Error {
+    case dataMissing
+    case internalParserError(Error)
+}
+
+protocol ResponseParser {
+    associatedtype ParsedObject
+    func parse(data: Data, type: ParsedObject.Type) -> Result<ParsedObject, ParserError>
+}
+
+struct StringParser: ResponseParser {
+    typealias ParsedObject = String
+    func parse(data: Data, type: ParsedObject.Type) -> Result<ParsedObject, ParserError> {
+        guard let string = String(data: data, encoding: .utf8) else {
+            return .failure(.dataMissing)
+        }
+        
+        return .success(string)
+    }
+}
+
+struct DataParser: ResponseParser {
+    typealias ParsedObject = Data
+    func parse(data: Data, type: ParsedObject.Type) -> Result<ParsedObject, ParserError> {
+        return .success(data)
+    }
+}
+
+struct DecodableParser<T: Decodable>: ResponseParser {
+    typealias ParsedObject = T
+    let parser: ParserProtocol
+
+    init(parser: ParserProtocol) {
+        self.parser = parser
+    }
+
+    func parse(data: Data, type: ParsedObject.Type) -> Result<ParsedObject, ParserError> {
+        let result = self.parser.parse(data: data) as Result<T, NetworkStackError>
+        return result.mapError { _ in
+            ParserError.dataMissing
+        }
+    }
+}
+
 public protocol ParserProtocol {
     func parse<T: Decodable>(data: Data?) -> Result<T, NetworkStackError>
 }
