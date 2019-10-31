@@ -7,6 +7,8 @@
 
 import Foundation
 
+typealias TaskIdentifier = Int
+
 protocol NetworkType {
     func request(withBaseURL baseURL: URL,
         path: String,
