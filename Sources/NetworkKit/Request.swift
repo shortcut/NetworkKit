@@ -37,10 +37,6 @@ public class URLSessionDataRequest: NSObject, Request {
 
     var cacheProvider: CacheProvider
 
-    deinit {
-        print("deallocated Request!")
-    }
-
     public init(urlSession: URLSession, urlRequest: URLRequest?, cacheProvider: CacheProvider) {
         self.cacheProvider = cacheProvider
         self.urlSession = urlSession
@@ -79,12 +75,12 @@ public class URLSessionDataRequest: NSObject, Request {
             if let error = self.error {
                 result = .failure(.responseError(error))
             } else {
-                if self.isSuccess {
+                if self.shouldValidate && !self.isSuccess {
+                    result = .failure(NetworkError.validateError)
+                } else {
                     result = self.parseResponse(urlRequest: urlRequest, data: self.data, parser: parser).mapError { error in
                         NetworkError.parsingError(error)
                     }
-                } else {
-                    result = .failure(NetworkError.validateError)
                 }
             }
 
