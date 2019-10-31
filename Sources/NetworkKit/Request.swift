@@ -15,7 +15,7 @@ public protocol Request: RequestResponses {
     var data: Data? { get }
     var error: Error? { get }
     var isSuccess: Bool { get }
-    
+
     func validate() -> Self
     func cancel()
 }
@@ -46,7 +46,7 @@ public class URLSessionDataRequest: NSObject, Request {
         self.urlSession = urlSession
         self.urlRequest = urlRequest
         super.init()
-        
+
         self.prepareTask()
     }
 
@@ -56,7 +56,7 @@ public class URLSessionDataRequest: NSObject, Request {
         guard let urlRequest = urlRequest else {
             return
         }
-        
+
         task = urlSession.dataTask(with: urlRequest)
     }
 
@@ -78,14 +78,12 @@ public class URLSessionDataRequest: NSObject, Request {
 
             if let error = self.error {
                 result = .failure(.responseError(error))
-            }
-            else {
+            } else {
                 if self.isSuccess {
                     result = self.parseResponse(urlRequest: urlRequest, data: self.data, parser: parser).mapError { error in
                         NetworkError.parsingError(error)
                     }
-                }
-                else {
+                } else {
                     result = .failure(NetworkError.validateError)
                 }
             }
@@ -127,7 +125,7 @@ public class URLSessionDataRequest: NSObject, Request {
         }
 
         operationQueue.isSuspended = false
-        
+
         task = nil
     }
 
@@ -147,7 +145,7 @@ public protocol RequestResponses {
 
     @discardableResult
     func responseString(_ completion: @escaping ResponseCallback<String>) -> Self
-    
+
     @discardableResult
     func responseDecoded<T: Decodable>(of type: T.Type,
                                        parser: ParserProtocol?,

@@ -61,7 +61,7 @@ extension UIImageView {
             )
         }
     }
-    
+
     private var downloadOperation: Operation? {
         get {
             return objc_getAssociatedObject(self, &AssociateKey.downloadOperation) as? Operation

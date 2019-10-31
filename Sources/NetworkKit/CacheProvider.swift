@@ -35,8 +35,7 @@ public class NSCacheProvider: CacheProvider {
             var item: CacheItem?
             if let existingItem = getCache(for: key.request) {
                 item = existingItem
-            }
-            else {
+            } else {
                 item = CacheItem(data: data, object: object)
             }
 

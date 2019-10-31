@@ -9,7 +9,7 @@ public enum NK {
                         headerValues: HTTPHeaders? = nil,
                         body: Encodable? = nil,
                         queryParameters query: QueryParameters? = nil) -> Request {
-        
+
         return NK.sharedNetwork.request(URLRequest(baseURL: baseURL,
                                                 path: path,
                                                 httpMethod: method,
@@ -23,7 +23,7 @@ public enum NK {
     public static func request(_ target: TargetType) -> Request {
         return NK.sharedNetwork.request(target)
     }
-    
+
     public static func request(_ url: URL, method: HTTPMethod = .get) -> Request {
         return NK.sharedNetwork.request(url, method: method)
     }

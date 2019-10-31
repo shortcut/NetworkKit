@@ -24,7 +24,7 @@ struct StringParser: ResponseParser {
         guard let string = String(data: data, encoding: .utf8) else {
             return .failure(.dataMissing)
         }
-        
+
         return .success(string)
     }
 }

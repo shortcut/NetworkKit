@@ -8,7 +8,6 @@
 @testable import NetworkKit
 import XCTest
 
-
 final class NetworkTests: XCTestCase {
     var network: Network?
 
@@ -16,7 +15,7 @@ final class NetworkTests: XCTestCase {
         super.setUp()
         network = Network()
     }
-    
+
     override func tearDown() {
         super.tearDown()
         network = nil
@@ -27,10 +26,9 @@ final class NetworkTests: XCTestCase {
         let expectation2 = XCTestExpectation(description: "decode")
         let expectation3 = XCTestExpectation(description: "decode")
 
-    
             let request = network?.request(HTTPStatusService.twoHundred(delay: 0))
         request?.responseString({ response in
-            
+
             expectation.fulfill()
 
             switch response.result {
@@ -39,9 +37,9 @@ final class NetworkTests: XCTestCase {
             case let .failure(error):
                 print("error: \(error)")
             }
-            
+
             })
-        
+
         request?.responseDecoded(of: TestModel.self) { response in
 
             expectation2.fulfill()
@@ -52,7 +50,7 @@ final class NetworkTests: XCTestCase {
             case let .failure(error):
                 print("error: \(error)")
             }
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 
                 self.network?.request(HTTPStatusService.twoHundred(delay: 0)).responseDecoded(of: TestModel.self) { response in
@@ -62,23 +60,23 @@ final class NetworkTests: XCTestCase {
                     case let .failure(error):
                         print("error: \(error)")
                     }
-                    
+
                     expectation3.fulfill()
 
                 }
             }
-            
+
         }
         wait(for: [expectation, expectation2, expectation3], timeout: 5)
 
     }
-    
+
     func testSuccessClient() {
         let expectation = XCTestExpectation(description: "should make a sucessful get request and decode the response")
 
         network?.request(HTTPStatusService.twoHundred(delay: 0)).responseDecoded(of: TestModel.self) { response in
             XCTAssertTrue(Thread.isMainThread)
-            
+
             switch response.result {
             case let .success(result):
                 XCTAssertEqual(response.statusCode, 200)
@@ -103,7 +101,7 @@ final class NetworkTests: XCTestCase {
             case let .failure(error):
                 print(error)
             }
-            
+
             expectation.fulfill()
         }
 
@@ -125,12 +123,12 @@ final class NetworkTests: XCTestCase {
 
         wait(for: [expectation], timeout: 5)
     }
-    
+
     func testCancelRequest() {
         let expectation = XCTestExpectation(description: "should cancel a request")
 
         let request = network?.request(HTTPStatusService.twoHundred(delay: 5))
-        
+
         request?.responseDecoded(of: TestModel.self) { response in
             switch response.result {
             case .success:
@@ -149,7 +147,7 @@ final class NetworkTests: XCTestCase {
         }
 
         request?.cancel()
-        
+
         wait(for: [expectation], timeout: 5)
     }
 }
