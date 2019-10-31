@@ -9,30 +9,6 @@ import Foundation
 
 public typealias ResponseCallback<SuccessType> = (Response<SuccessType>) -> Void
 
-public protocol RequestResponses {
-    @discardableResult
-    func response(_ completion: @escaping ResponseCallback<Data>) -> Self
-
-    @discardableResult
-    func responseString(_ completion: @escaping ResponseCallback<String>) -> Self
-    
-    @discardableResult
-    func responseDecoded<T: Decodable>(of type: T.Type,
-                                       parser: ParserProtocol?,
-                                       completion: @escaping ResponseCallback<T>) -> Self
-}
-
-extension RequestResponses {
-    // to provide defaults
-    @discardableResult
-    func responseDecoded<T: Decodable>(of type: T.Type = T.self,
-                                       parser: ParserProtocol? = nil,
-                                       completion: @escaping ResponseCallback<T>) -> Self {
-        self.responseDecoded(of: type, parser: parser, completion: completion)
-        return self
-    }
-}
-
 public protocol Request: RequestResponses {
     var urlRequest: URLRequest? { get }
     var response: URLResponse? { get }
@@ -91,14 +67,14 @@ public class URLSessionDataRequest: NSObject, Request {
     func addParseOperation<Parser: ResponseParser>(parser: Parser,
                                                    block: @escaping ResponseCallback<Parser.ParsedObject>) {
         guard let urlRequest = urlRequest else {
-            block(Response(.failure(.invalidURL)))
+            block(responseWithResult(.failure(.invalidURL)))
             return
         }
 
         startTask()
 
         operationQueue.addOperation {
-            var result: Result<Parser.ParsedObject, NetworkStackError>
+            var result: Result<Parser.ParsedObject, NetworkError>
 
             if let error = self.error {
                 result = .failure(.responseError(error))
@@ -106,11 +82,11 @@ public class URLSessionDataRequest: NSObject, Request {
             else {
                 if self.isSuccess {
                     result = self.parseResponse(urlRequest: urlRequest, data: self.data, parser: parser).mapError { error in
-                        NetworkStackError.parsingError(error)
+                        NetworkError.parsingError(error)
                     }
                 }
                 else {
-                    result = .failure(NetworkStackError.validateError)
+                    result = .failure(NetworkError.validateError)
                 }
             }
 
@@ -155,13 +131,37 @@ public class URLSessionDataRequest: NSObject, Request {
         task = nil
     }
 
-    private func responseWithResult<ParsedObject>(_ result: Result<ParsedObject, NetworkStackError>) -> Response<ParsedObject> {
+    private func responseWithResult<ParsedObject>(_ result: Result<ParsedObject, NetworkError>) -> Response<ParsedObject> {
         var response = Response(result)
         response.data = self.data
         response.response = self.response
         response.request = self.urlRequest
 
         return response
+    }
+}
+
+public protocol RequestResponses {
+    @discardableResult
+    func response(_ completion: @escaping ResponseCallback<Data>) -> Self
+
+    @discardableResult
+    func responseString(_ completion: @escaping ResponseCallback<String>) -> Self
+    
+    @discardableResult
+    func responseDecoded<T: Decodable>(of type: T.Type,
+                                       parser: ParserProtocol?,
+                                       completion: @escaping ResponseCallback<T>) -> Self
+}
+
+public extension RequestResponses {
+    // to provide defaults
+    @discardableResult
+    func responseDecoded<T: Decodable>(of type: T.Type = T.self,
+                                       parser: ParserProtocol? = nil,
+                                       completion: @escaping ResponseCallback<T>) -> Self {
+        self.responseDecoded(of: type, parser: parser, completion: completion)
+        return self
     }
 }
 
@@ -198,8 +198,9 @@ extension URLSessionDataRequest: RequestResponses {
         // TODO: need to check cachePolicy
         if let urlRequest = urlRequest,
             let cacheItem = cacheProvider.getCache(for: urlRequest),
+            urlRequest.cachePolicy == .returnCacheDataDontLoad,
             let cacheObject = cacheItem.object as? T {
-            let result = .success(cacheObject) as Result<T, NetworkStackError>
+            let result = .success(cacheObject) as Result<T, NetworkError>
 
             OperationQueue.main.addOperation {
                 completion(self.responseWithResult(result))
@@ -209,8 +210,9 @@ extension URLSessionDataRequest: RequestResponses {
 
         addParseOperation(parser: DecodableParser<T>(parser: parser)) { response in
 
-            if let urlRequest = self.urlRequest {
-                self.cacheProvider.setCache(for: urlRequest, data: self.data, object: try? response.result.get())
+            if let urlRequest = self.urlRequest,
+                case let .success(object) = response.result {
+                self.cacheProvider.setCache(for: urlRequest, data: self.data, object: object)
             }
 
             OperationQueue.main.addOperation {
@@ -222,7 +224,7 @@ extension URLSessionDataRequest: RequestResponses {
     }
 }
 
-extension URLSessionDataRequest {
+public extension URLSessionDataRequest {
     var statusCode: Int? {
         guard let response = self.response as? HTTPURLResponse else { return nil }
         return response.statusCode
@@ -255,41 +257,5 @@ extension URLSessionDataRequest: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         self.error = error
         finish()
-    }
-}
-
-class DiskRequest: NSObject, Request {
-
-    var isSuccess: Bool = true
-    var data: Data?
-    var error: Error?
-
-    func validate() -> Self {
-        return self
-    }
-
-    func response(_ completion: @escaping ResponseCallback<Data>) -> Self {
-        completion(Response(.failure(.dataMissing)))
-        return self
-    }
-
-    func responseString(_ completion: @escaping ResponseCallback<String>) -> Self {
-        completion(Response(.failure(.dataMissing)))
-        return self
-    }
-
-    func responseDecoded<T>(of type: T.Type, parser: ParserProtocol?, completion: @escaping ResponseCallback<T>) -> Self where T : Decodable {
-        completion(Response(.failure(.dataMissing)))
-        return self
-    }
-
-    func cancel() {
-    }
-
-    var urlRequest: URLRequest?
-    var response: URLResponse?
-
-    init(urlRequest: URLRequest?) {
-        self.urlRequest = urlRequest
     }
 }

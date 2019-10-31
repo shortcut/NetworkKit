@@ -8,7 +8,7 @@ You manage your own retained WebService instance inside some network manager cla
 
 ```swift
     private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
-    webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, NetworkStackError>) in
+    webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, NetworkError>) in
         switch response.result {
         case let .success(httpBinResult):
             print(httpBinResult)
@@ -22,7 +22,7 @@ You manage your own retained WebService instance inside some network manager cla
 or if you need the data directly:
 
 ```swift
-    webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkStackError>) in
+    webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkError>) in
         switch result {
         case let .success(data):
             print("success \(data)")
@@ -34,9 +34,9 @@ or if you need the data directly:
 
 ## Response
 
-The type of object you get back from a response is Response<SomeModel, NetworkStackError>, where SomeModel's type is defined by the completion block's definition of the Success value of Response in your webService.request() call.
+The type of object you get back from a response is Response<SomeModel, NetworkError>, where SomeModel's type is defined by the completion block's definition of the Success value of Response in your webService.request() call.
 
-The Response object is a wrapper around the Result<SomeModel, NetworkStackError> and holds everything you might need about the response, such as the originating URLRequest, the URLResponse object and raw data.
+The Response object is a wrapper around the Result<SomeModel, NetworkError> and holds everything you might need about the response, such as the originating URLRequest, the URLResponse object and raw data.
 
 ```swift
 public struct Response<Success, Failure: Error> {

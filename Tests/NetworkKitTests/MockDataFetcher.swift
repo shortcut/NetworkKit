@@ -13,7 +13,7 @@ import NetworkKit
 //        if let data = Resource(name: "getResponse", type: "json").data {
 //            completion(nil, nil, data, nil)
 //        } else {
-//            completion(nil, nil, nil, NetworkStackError.dataMissing)
+//            completion(nil, nil, nil, NetworkError.dataMissing)
 //        }
 //        
 //        return nil

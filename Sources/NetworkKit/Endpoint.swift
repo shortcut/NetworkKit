@@ -19,7 +19,7 @@ public enum HTTPMethod: String {
     }
 }
 
-public enum NetworkStackError: Error {
+public enum NetworkError: Error {
     case invalidURL
     case parsingError(Error)
     case responseError(Error)
@@ -34,7 +34,7 @@ public class EmptyErrorResponse: Decodable {
 }
 
 public typealias HTTPHeaders = [String: String]
-public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkStackError>) -> Void
+public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkError>) -> Void
 public typealias DataCallback = (URLRequest?, URLResponse?, Data?, Error?) -> Void
 public typealias ResultRequestCallback<T> = (Response<T>) -> Void
 
@@ -51,13 +51,13 @@ public struct Response<SuccessType> {
     public var response: URLResponse?
 
     public var data: Data?
-    public let result: Result<SuccessType, NetworkStackError>
+    public let result: Result<SuccessType, NetworkError>
 
-    init(_ result: Result<SuccessType, NetworkStackError>) {
+    init(_ result: Result<SuccessType, NetworkError>) {
         self.result = result
     }
 
-    init(request: URLRequest?, response: URLResponse?, data: Data?, result: Result<SuccessType, NetworkStackError>) {
+    init(request: URLRequest?, response: URLResponse?, data: Data?, result: Result<SuccessType, NetworkError>) {
         self.request = request
         self.response = response
         self.data = data

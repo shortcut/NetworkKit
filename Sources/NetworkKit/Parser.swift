@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ParserError: Error {
+public enum ParserError: Error {
     case dataMissing
     case internalParserError(Error)
 }
@@ -45,28 +45,28 @@ struct DecodableParser<T: Decodable>: ResponseParser {
     }
 
     func parse(data: Data, type: ParsedObject.Type) -> Result<ParsedObject, ParserError> {
-        let result = self.parser.parse(data: data) as Result<T, NetworkStackError>
-        return result.mapError { _ in
-            ParserError.dataMissing
+        let result = self.parser.parse(data: data) as Result<T, ParserError>
+        return result.mapError { error in
+            ParserError.internalParserError(error)
         }
     }
 }
 
 public protocol ParserProtocol {
-    func parse<T: Decodable>(data: Data?) -> Result<T, NetworkStackError>
+    func parse<T: Decodable>(data: Data?) -> Result<T, ParserError>
 }
 
 public class JSONParser: ParserProtocol {
     let jsonDecoder = JSONDecoder()
     public init(decoder: JSONDecoder = JSONDecoder()) {}
 
-    public func parse<T>(data: Data?) -> Result<T, NetworkStackError> where T: Decodable {
+    public func parse<T>(data: Data?) -> Result<T, ParserError> where T: Decodable {
         guard let data = data else {
-            return .failure(NetworkStackError.dataMissing)
+            return .failure(ParserError.dataMissing)
         }
 
         return Result { try jsonDecoder.decode(T.self, from: data) }.mapError { error in
-            NetworkStackError.parsingError(error)
+            ParserError.internalParserError(error)
         }
     }
 }

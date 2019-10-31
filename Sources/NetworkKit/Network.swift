@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Network.swift
 //  
 //
 //  Created by Andre Navarro on 10/31/19.
@@ -47,17 +47,15 @@ extension NetworkType {
         return request(target.asURLRequest())
     }
     
-    public func request(_ url: URL, method: HTTPMethod) -> Request {
+    public func request(_ url: URL, method: HTTPMethod = .get) -> Request {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method.value
         
         return request(urlRequest)
     }
-    
 }
 
 public class MockNetwork: NetworkType {
-
     public func request(_ urlRequest: URLRequest?) -> Request {
         return DiskRequest(urlRequest: urlRequest)
     }
@@ -69,7 +67,6 @@ public class Network: NSObject, NetworkType {
     var cacheProvider: CacheProvider
     
     deinit {
-        print("deallocated Network!")
         urlSession?.invalidateAndCancel()
         sessionDelegate = nil
         urlSession = nil

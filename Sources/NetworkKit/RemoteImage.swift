@@ -101,7 +101,7 @@ extension URLSessionDataRequest {
         if let urlRequest = urlRequest,
             let cacheItem = cacheProvider.getCache(for: urlRequest),
             let cacheObject = cacheItem.object as? UIImage {
-            let result = .success(cacheObject) as Result<UIImage, NetworkStackError>
+            let result = .success(cacheObject) as Result<UIImage, NetworkError>
             completion(Response(result))
             return self
         }

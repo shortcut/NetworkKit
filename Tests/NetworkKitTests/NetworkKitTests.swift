@@ -45,7 +45,7 @@ struct HTTPBinArrayResult: Decodable {
 //    func testGetDataRequestResponse() {
 //        let expectation = XCTestExpectation(description: "make get request")
 //
-//        webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkStackError>) in
+//        webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkError>) in
 //
 //            XCTAssertTrue(Thread.isMainThread)
 //
