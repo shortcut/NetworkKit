@@ -102,6 +102,7 @@ extension Response {
     public func localizedStringForStatusCode() -> String? 
     public var allHeaderFields: [AnyHashable: Any]? 
 }
+```
 
 To cancel a request, hold on to the `Request` object and cancel it whenever.
 
