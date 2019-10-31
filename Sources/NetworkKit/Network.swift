@@ -9,7 +9,7 @@ import Foundation
 
 typealias TaskIdentifier = Int
 
-protocol NetworkType {
+public protocol NetworkType {
     func request(withBaseURL baseURL: URL,
         path: String,
         method: HTTPMethod,
@@ -25,7 +25,7 @@ protocol NetworkType {
 }
 
 extension NetworkType {
-    func request(withBaseURL baseURL: URL,
+    public func request(withBaseURL baseURL: URL,
         path: String,
         method: HTTPMethod,
         bodyType: HTTPBodyType = .none,
@@ -43,11 +43,11 @@ extension NetworkType {
                                   body: body))
     }
 
-    func request(_ target: TargetType) -> Request {
+    public func request(_ target: TargetType) -> Request {
         return request(target.asURLRequest())
     }
     
-    func request(_ url: URL, method: HTTPMethod) -> Request {
+    public func request(_ url: URL, method: HTTPMethod) -> Request {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method.value
         
@@ -56,14 +56,14 @@ extension NetworkType {
     
 }
 
-class MockNetwork: NetworkType {
+public class MockNetwork: NetworkType {
 
-    func request(_ urlRequest: URLRequest?) -> Request {
+    public func request(_ urlRequest: URLRequest?) -> Request {
         return DiskRequest(urlRequest: urlRequest)
     }
 }
 
-class Network: NSObject, NetworkType {
+public class Network: NSObject, NetworkType {
     var sessionDelegate: NetworkSessionDelegate?
     var urlSession: URLSession?
     var cacheProvider: CacheProvider
@@ -75,13 +75,13 @@ class Network: NSObject, NetworkType {
         urlSession = nil
     }
     
-    init(urlSessionConfiguration: URLSessionConfiguration = .default, cacheProvider: CacheProvider = NSCacheProvider()) {
+    public init(urlSessionConfiguration: URLSessionConfiguration = .default, cacheProvider: CacheProvider = NSCacheProvider()) {
         self.cacheProvider = cacheProvider
         self.sessionDelegate = NetworkSessionDelegate()
         self.urlSession = URLSession(configuration: urlSessionConfiguration, delegate: self.sessionDelegate, delegateQueue: nil)
     }
     
-    func request(_ urlRequest: URLRequest?) -> Request {
+    public func request(_ urlRequest: URLRequest?) -> Request {
         let ourRequest = URLSessionDataRequest(urlSession: urlSession!,
                                                urlRequest: urlRequest,
                                                cacheProvider: cacheProvider)

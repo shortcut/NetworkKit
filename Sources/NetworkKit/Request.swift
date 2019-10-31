@@ -33,7 +33,7 @@ extension RequestResponses {
     }
 }
 
-protocol Request: RequestResponses {
+public protocol Request: RequestResponses {
     var urlRequest: URLRequest? { get }
     var response: URLResponse? { get }
     var data: Data? { get }
@@ -44,19 +44,19 @@ protocol Request: RequestResponses {
     func cancel()
 }
 
-class URLSessionDataRequest: NSObject, Request {
+public class URLSessionDataRequest: NSObject, Request {
     private var operationQueue = OperationQueue()
     private var defaultParser: ParserProtocol = JSONParser()
 
-    let urlRequest: URLRequest?
-    let urlSession: URLSession
+    public let urlRequest: URLRequest?
+    public let urlSession: URLSession
 
     var task: URLSessionTask?
-    var data: Data?
-    var error: Error?
+    public var data: Data?
+    public var error: Error?
 
-    var response: URLResponse?
-    var isSuccess: Bool = true
+    public var response: URLResponse?
+    public var isSuccess: Bool = true
     private var shouldValidate: Bool = false
 
     var cacheProvider: CacheProvider
@@ -65,7 +65,7 @@ class URLSessionDataRequest: NSObject, Request {
         print("deallocated Request!")
     }
 
-    init(urlSession: URLSession, urlRequest: URLRequest?, cacheProvider: CacheProvider) {
+    public init(urlSession: URLSession, urlRequest: URLRequest?, cacheProvider: CacheProvider) {
         self.cacheProvider = cacheProvider
         self.urlSession = urlSession
         self.urlRequest = urlRequest
@@ -74,7 +74,7 @@ class URLSessionDataRequest: NSObject, Request {
         self.prepareTask()
     }
 
-    func prepareTask() {
+    private func prepareTask() {
         operationQueue.isSuspended = true
 
         guard let urlRequest = urlRequest else {
@@ -84,7 +84,7 @@ class URLSessionDataRequest: NSObject, Request {
         task = urlSession.dataTask(with: urlRequest)
     }
 
-    func cancel() {
+    public func cancel() {
         task?.cancel()
     }
 
@@ -118,7 +118,7 @@ class URLSessionDataRequest: NSObject, Request {
         }
     }
 
-    func validate() -> Self {
+    public func validate() -> Self {
         shouldValidate = true
         return self
     }
@@ -167,7 +167,7 @@ class URLSessionDataRequest: NSObject, Request {
 
 extension URLSessionDataRequest: RequestResponses {
     @discardableResult
-    func response(_ completion: @escaping ResponseCallback<Data>) -> Self {
+    public func response(_ completion: @escaping ResponseCallback<Data>) -> Self {
         addParseOperation(parser: DataParser()) { response in
             OperationQueue.main.addOperation {
                 completion(response)
@@ -178,7 +178,7 @@ extension URLSessionDataRequest: RequestResponses {
     }
 
     @discardableResult
-    func responseString(_ completion: @escaping ResponseCallback<String>) -> Self {
+    public func responseString(_ completion: @escaping ResponseCallback<String>) -> Self {
         addParseOperation(parser: StringParser()) { response in
             OperationQueue.main.addOperation {
                 completion(response)
@@ -189,7 +189,7 @@ extension URLSessionDataRequest: RequestResponses {
     }
 
     @discardableResult
-    func responseDecoded<T: Decodable>(of type: T.Type = T.self,
+    public func responseDecoded<T: Decodable>(of type: T.Type = T.self,
                                        parser: ParserProtocol? = nil,
                                        completion: @escaping ResponseCallback<T>) -> Self {
         let parser = parser ?? self.defaultParser
@@ -240,19 +240,19 @@ extension URLSessionDataRequest {
 }
 
 extension URLSessionDataRequest: URLSessionDataDelegate {
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         self.data = data
     }
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         self.error = error
         finish()
     }
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
                     didReceive response: URLResponse,
                     completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         self.response = response as? HTTPURLResponse
     }
-    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+    public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         self.error = error
         finish()
     }

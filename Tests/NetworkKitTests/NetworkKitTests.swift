@@ -188,7 +188,7 @@ struct HTTPBinArrayResult: Decodable {
 //        }
 //
 //        webService.cancelTask(with: taskId!)
-//        
+//
 //        wait(for: [expectation], timeout: 5)
 //    }
 //}
