@@ -4,68 +4,113 @@ This package provides basic Networking.
 
 ## Usage
 
-You manage your own retained WebService instance inside some network manager class and wrap the HTTP calls:
+Create an object that conforms to TargetType to define the HTTP details of your API's endpoints 
 
 ```swift
-    private var webService = Webservice(baseURL: URL(string: "https://httpbin.org/")!)
-    webService.request(withPath: "get", method: .get) { (response: Response<HTTPBinResult, NetworkError>) in
-        switch response.result {
-        case let .success(httpBinResult):
-            print(httpBinResult)
-        case let .failure(error):
-            print("error: \(error)")
-        }
+enum UsersAPI {
+    case createUser(id: String)
+    case getUsers(name: String)
+}
 
+extension UsersAPI: TargetType {
+    var baseURL: URL { URL(string: "http://example.com/")! }
+    
+    var headerValues: HTTPHeaders? {
+        ["api-subscription-key": "asdkfhaskjdfh",
+         "Accept": "application/json"]
     }
-```
-
-or if you need the data directly:
-
-```swift
-    webService.requestData(withPath: "get", method: .get) { (_, response, result: Result<Data, NetworkError>) in
-        switch result {
-        case let .success(data):
-            print("success \(data)")
-        case let .failure(error):
-            print("error: \(error)")
+    
+    var path: String {
+        switch self {
+        case .createUser(let id, _):
+            return "/\(id)"
+        case .getUsers(let name):
+            return "/session/nfc/\(name)"
         }
     }
+    
+    var method: HTTPMethod {
+        switch self {
+        case .createUser:
+            return .post
+        case .getUsers:
+            return .get
+        }
+    }
+    
+    var bodyType: HTTPBodyType {
+        switch self {
+        case .createUser:
+            return .json
+        case .getUsers:
+            return .none
+        }
+    }
+    
+    var body: Encodable? {
+        switch self {
+        case .createUser(_, let payload):
+            return payload
+        case .getUsers:
+            return nil
+        }
+    }
+}
+
 ```
 
-## Response
+## Request
 
-The type of object you get back from a response is Response<SomeModel, NetworkError>, where SomeModel's type is defined by the completion block's definition of the Success value of Response in your webService.request() call.
-
-The Response object is a wrapper around the Result<SomeModel, NetworkError> and holds everything you might need about the response, such as the originating URLRequest, the URLResponse object and raw data.
+You can make requests on the shared `Network` object at `NK` or create your own `Network`. For example if you wanted to request a decoded `User` object, you could do:
 
 ```swift
-public struct Response<Success, Failure: Error> {
-    public let request: URLRequest?
-    public let response: URLResponse?
-    public let data: Data?
-    public let result: Result<Success, Failure>
-    public var value: Success? { return try? result.get() }
-    public var error: Failure? {
-        guard case let .failure(error) = result else { return nil }
-        return error
+NK.request(UsersAPI.getUser(id: 123)).responseDecoded(of: User.self) { response in
+    switch response.result {
+    case let .success(data):
+        print("success \(data)")
+    case let .failure(error):
+        print("error: \(error)")
     }
 }
 ```
-
-If you wanted to get the status code for example, you'd take it from:
+You can request a urlString, URL, URLRequest or a TargetType:
 
 ```swift
-(response.response as? HTTPURLResponse)?.statusCode
+NK.request("http://google")
+NK.request(URL(string: "http://google"))
+NK.request(URLRequest(url: URL(string:"http://google")))
+NK.request(target)
 ```
 
-## Cancel
+You can also do `.response` if you just want the data, or `.responseString` if you want a string
 
-To cancel requests, hold on to the returned Request object from webService.request() and call cancel on that.
+## Response
+
+The type of object you get back from a response is Response<SomeModel>, which is a wrapper around the Result<SomeModel, NetworkError> and holds everything you might need about the response, such as the originating URLRequest, the URLResponse object and raw data.
 
 ```swift
-        let request = webService.request(withPath: "get", method: .get) { (response in 
-            ...
-        }
+public struct Response<Success, Failure: Error> {
+    public var request: URLRequest?
+    public var response: URLResponse?
 
-        request.cancel()
+    public var data: Data?
+    public let result: Result<SuccessType, NetworkError>
+}
+
+extension Response {
+    public var statusCode: Int?
+    public func localizedStringForStatusCode() -> String? 
+    public var allHeaderFields: [AnyHashable: Any]? 
+}
+```
+
+To cancel a request, hold on to the `Request` object and cancel it whenever.
+
+```swift
+let request = NK.request(UsersAPI.getUsers)
+request.response { response in 
+// blabla
+}
+
+request.cancel()
 ```
