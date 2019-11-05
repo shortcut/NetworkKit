@@ -26,6 +26,7 @@ public protocol CacheProvider {
 
 public class NSCacheProvider: CacheProvider {
     private lazy var cache = NSCache<URLRequestKey, CacheItem>()
+    private lazy var operationQueue = OperationQueue()
 
     public init() {}
 

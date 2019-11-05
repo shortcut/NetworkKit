@@ -192,3 +192,17 @@ extension HTTPStatusService: TargetType {
         }
     }
 }
+
+struct HTTPBinResult: Decodable {
+    let url: String
+    let form: [String: String]?
+    let args: [String: String]?
+    let json: [String: String]?
+}
+
+struct HTTPBinArrayResult: Decodable {
+    let url: String
+    let form: [String: String]?
+    let args: [String: [String]]?
+    let json: [String: String]?
+}

@@ -36,11 +36,27 @@ struct DataParser: ResponseParser {
     }
 }
 
+struct JSONParser: ResponseParser {
+    typealias ParsedObject = Any
+    var options: JSONSerialization.ReadingOptions
+
+    init(options: JSONSerialization.ReadingOptions = .allowFragments) {
+        self.options = options
+    }
+
+    func parse(data: Data, type: Any.Protocol) -> Result<Any, ParserError> {
+        let result = Result { try JSONSerialization.jsonObject(with: data, options: options) }.mapError {
+            ParserError.internalParserError($0)
+        }
+        return result
+    }
+}
+
 struct DecodableParser<T: Decodable>: ResponseParser {
     typealias ParsedObject = T
-    let parser: ParserProtocol
+    let parser: DecodableParserProtocol
 
-    init(parser: ParserProtocol) {
+    init(parser: DecodableParserProtocol) {
         self.parser = parser
     }
 
@@ -52,11 +68,11 @@ struct DecodableParser<T: Decodable>: ResponseParser {
     }
 }
 
-public protocol ParserProtocol {
+public protocol DecodableParserProtocol {
     func parse<T: Decodable>(data: Data?) -> Result<T, ParserError>
 }
 
-public class JSONParser: ParserProtocol {
+public class DecodableJSONParser: DecodableParserProtocol {
     let jsonDecoder = JSONDecoder()
     public init(decoder: JSONDecoder = JSONDecoder()) {}
 

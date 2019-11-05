@@ -8,68 +8,40 @@
 import Foundation
 import UIKit
 
-extension UIImageView {
-    public func loadImage(from URLString: String) {
-//        guard let url = URL(string: URLString) else { return }
-//        let urlRequest = URLRequest(url: url)
-//
-//        downloadOperation?.cancel()
-//
-//        self.currentTaskId = Client.shared.perform(urlRequest) { response in
-//            self.downloadOperation = BlockOperation(block: {
-//                response.mapImage(cache: Client.shared.cache) { (response: Response<UIImage>) in
-//                    if urlRequest == response.request {
-//                        switch response.result {
-//                        case let .success(image):
-//                            if self.downloadOperation?.isCancelled == false {
-//                                self.image = image
-//                            }
-//                            else {
-//                                print("nawwww")
-//                            }
-//                        case let .failure(error):
-//                            print(" \(error)")
-//                        }
-//                    }
-//
-//                    self.currentTaskId = nil
-//                }
-//            })
-//
-//            self.downloadOperation?.start()
-//        }
+public extension UIImageView {
+    func loadImage(from urlString: String,
+        placeHolder: UIImage? = nil) {
+        if let placeHolder = placeHolder {
+            self.image = placeHolder
+        }
+
+        if let request = NK.request(urlString) as? URLSessionDataRequest {
+            request.responseImage { response in
+                if case let .success(image) = response.result {
+                    self.image = image
+                } else {
+                    self.image = nil
+                }
+
+                self.currentRequest = nil
+            }
+            self.currentRequest = request
+        }
     }
 
-    public func cancelImageLoad() {
-//        downloadOperation?.cancel()
-//        if let taskId = self.currentTaskId {
-//            Client.shared.cancelRequest(with: taskId)
-//        }
-//        self.currentTaskId = nil
+    func cancelImageLoad() {
+        self.currentRequest?.cancel()
+        self.currentRequest = nil
     }
 
-    private var currentTaskId: TaskIdentifier? {
+    private var currentRequest: Request? {
         get {
-            return objc_getAssociatedObject(self, &AssociateKey.currentTaskId) as? TaskIdentifier
+            return objc_getAssociatedObject(self, &AssociateKey.currentRequest) as? Request
         }
         set {
             objc_setAssociatedObject(
                 self,
-                &AssociateKey.currentTaskId,
-                newValue,
-                objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC
-            )
-        }
-    }
-
-    private var downloadOperation: Operation? {
-        get {
-            return objc_getAssociatedObject(self, &AssociateKey.downloadOperation) as? Operation
-        }
-        set {
-            objc_setAssociatedObject(
-                self,
-                &AssociateKey.downloadOperation,
+                &AssociateKey.currentRequest,
                 newValue,
                 objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC
             )
@@ -78,11 +50,10 @@ extension UIImageView {
 }
 
 private struct AssociateKey {
-    static var currentTaskId = 0
-    static var downloadOperation = 1
+    static var currentRequest = 0
 }
 
-struct ImageParser: ResponseParser {
+public struct ImageParser: ResponseParser {
     typealias ParsedObject = UIImage
 
     func parse(data: Data, type: UIImage.Type) -> Result<UIImage, ParserError> {
@@ -94,23 +65,14 @@ struct ImageParser: ResponseParser {
     }
 }
 
-extension URLSessionDataRequest {
+public extension URLSessionDataRequest {
+    @discardableResult
     func responseImage(completion: @escaping ResponseCallback<UIImage>) -> Self {
 
-        // check cache and return early
-        if let urlRequest = urlRequest,
-            let cacheItem = cacheProvider.getCache(for: urlRequest),
-            let cacheObject = cacheItem.object as? UIImage {
-            let result = .success(cacheObject) as Result<UIImage, NetworkError>
-            completion(Response(result))
-            return self
-        }
-
-        addParseOperation(parser: ImageParser()) { response in
-            if let urlRequest = self.urlRequest {
-                self.cacheProvider.setCache(for: urlRequest, data: nil, object: try? response.result.get())
+        self.addParseOperation(parser: ImageParser()) { response in
+            OperationQueue.main.addOperation {
+                completion(response)
             }
-            completion(response)
         }
 
         return self

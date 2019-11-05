@@ -28,17 +28,12 @@ public enum NetworkError: Error {
     case errorResponse(Decodable?)
     case middlewareError(Error)
     case validateError
-}
-
-public class EmptyErrorResponse: Decodable {
+    case cancelled
 }
 
 public typealias HTTPHeaders = [String: String]
-public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkError>) -> Void
-public typealias DataCallback = (URLRequest?, URLResponse?, Data?, Error?) -> Void
 public typealias ResultRequestCallback<T> = (Response<T>) -> Void
 
-public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
 
 public enum HTTPBodyType {
     case json
