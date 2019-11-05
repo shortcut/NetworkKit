@@ -15,14 +15,18 @@ public extension UIImageView {
             self.image = placeHolder
         }
 
+        self.cancelImageLoad()
+        
         if let request = NK.request(urlString) as? URLSessionDataRequest {
             request.responseImage { response in
+                guard request.urlRequest == self.currentRequest?.urlRequest else {
+                    return
+                }
+                
                 if case let .success(image) = response.result {
                     self.image = image
-                } else {
-                    self.image = nil
                 }
-
+                
                 self.currentRequest = nil
             }
             self.currentRequest = request
