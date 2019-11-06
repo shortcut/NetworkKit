@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites name='NetworkKitTests.xctest' tests='5' failures='0'>
+  <testsuite name='NetworkKitTests.NetworkTests' tests='5' failures='0'>
+    <testcase classname='NetworkKitTests.NetworkTests' name='testCancelRequest' time='0.010'/>
+    <testcase classname='NetworkKitTests.NetworkTests' name='testChainedRequests' time='2.040'/>
+    <testcase classname='NetworkKitTests.NetworkTests' name='testErrorClient' time='0.743'/>
+    <testcase classname='NetworkKitTests.NetworkTests' name='testInvalidURL' time='0.002'/>
+    <testcase classname='NetworkKitTests.NetworkTests' name='testSuccessClient' time='0.741'/>
+  </testsuite>
+</testsuites>
