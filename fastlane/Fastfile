@@ -1,0 +1,3 @@
+lane :tests do
+  run_tests(scheme: "NetworkKit")
+end

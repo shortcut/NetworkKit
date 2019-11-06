@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		653E7AD62372C7470012416F /* NetworkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 653E7AD52372C7470012416F /* NetworkKit */; };
+		6555856F2372FE58008379B5 /* NetworkKitDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6555856E2372FE58008379B5 /* NetworkKitDemoTests.swift */; };
 		657DA04423704EED00D25F68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657DA04323704EED00D25F68 /* AppDelegate.swift */; };
 		657DA04823704EED00D25F68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657DA04723704EED00D25F68 /* ViewController.swift */; };
 		657DA04B23704EED00D25F68 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657DA04923704EED00D25F68 /* Main.storyboard */; };
@@ -15,8 +16,21 @@
 		657DA05023704EF000D25F68 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657DA04E23704EF000D25F68 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		655585712372FE58008379B5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 657DA03823704EED00D25F68 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 657DA03F23704EED00D25F68;
+			remoteInfo = NetworkKitDemo;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		653E7AD32372C6B60012416F /* NetworkKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NetworkKit; path = ../..; sourceTree = "<group>"; };
+		6555856C2372FE58008379B5 /* NetworkKitDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NetworkKitDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6555856E2372FE58008379B5 /* NetworkKitDemoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkKitDemoTests.swift; sourceTree = "<group>"; };
+		655585702372FE58008379B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		657DA04023704EED00D25F68 /* NetworkKitDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkKitDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		657DA04323704EED00D25F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		657DA04723704EED00D25F68 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -27,6 +41,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		655585692372FE58008379B5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		657DA03D23704EED00D25F68 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,11 +66,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6555856D2372FE58008379B5 /* NetworkKitDemoTests */ = {
+			isa = PBXGroup;
+			children = (
+				6555856E2372FE58008379B5 /* NetworkKitDemoTests.swift */,
+				655585702372FE58008379B5 /* Info.plist */,
+			);
+			path = NetworkKitDemoTests;
+			sourceTree = "<group>";
+		};
 		657DA03723704EED00D25F68 = {
 			isa = PBXGroup;
 			children = (
 				653E7AD32372C6B60012416F /* NetworkKit */,
 				657DA04223704EED00D25F68 /* NetworkKitDemo */,
+				6555856D2372FE58008379B5 /* NetworkKitDemoTests */,
 				657DA04123704EED00D25F68 /* Products */,
 				653E7AD42372C7470012416F /* Frameworks */,
 			);
@@ -59,6 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				657DA04023704EED00D25F68 /* NetworkKitDemo.app */,
+				6555856C2372FE58008379B5 /* NetworkKitDemoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +111,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		6555856B2372FE58008379B5 /* NetworkKitDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 655585752372FE58008379B5 /* Build configuration list for PBXNativeTarget "NetworkKitDemoTests" */;
+			buildPhases = (
+				655585682372FE58008379B5 /* Sources */,
+				655585692372FE58008379B5 /* Frameworks */,
+				6555856A2372FE58008379B5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				655585722372FE58008379B5 /* PBXTargetDependency */,
+			);
+			name = NetworkKitDemoTests;
+			productName = NetworkKitDemoTests;
+			productReference = 6555856C2372FE58008379B5 /* NetworkKitDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		657DA03F23704EED00D25F68 /* NetworkKitDemo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 657DA05423704EF000D25F68 /* Build configuration list for PBXNativeTarget "NetworkKitDemo" */;
@@ -106,10 +156,14 @@
 		657DA03823704EED00D25F68 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1100;
+				LastSwiftUpdateCheck = 1120;
 				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "Shortcut AS";
 				TargetAttributes = {
+					6555856B2372FE58008379B5 = {
+						CreatedOnToolsVersion = 11.2;
+						TestTargetID = 657DA03F23704EED00D25F68;
+					};
 					657DA03F23704EED00D25F68 = {
 						CreatedOnToolsVersion = 11.0;
 					};
@@ -131,11 +185,19 @@
 			projectRoot = "";
 			targets = (
 				657DA03F23704EED00D25F68 /* NetworkKitDemo */,
+				6555856B2372FE58008379B5 /* NetworkKitDemoTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6555856A2372FE58008379B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		657DA03E23704EED00D25F68 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,6 +231,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		655585682372FE58008379B5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6555856F2372FE58008379B5 /* NetworkKitDemoTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		657DA03C23704EED00D25F68 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -179,6 +249,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		655585722372FE58008379B5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 657DA03F23704EED00D25F68 /* NetworkKitDemo */;
+			targetProxy = 655585712372FE58008379B5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		657DA04923704EED00D25F68 /* Main.storyboard */ = {
@@ -200,6 +278,48 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		655585732372FE58008379B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLFLF8ZQDD;
+				INFOPLIST_FILE = NetworkKitDemoTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = no.shortcut.NetworkKitDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NetworkKitDemo.app/NetworkKitDemo";
+			};
+			name = Debug;
+		};
+		655585742372FE58008379B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLFLF8ZQDD;
+				INFOPLIST_FILE = NetworkKitDemoTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = no.shortcut.NetworkKitDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NetworkKitDemo.app/NetworkKitDemo";
+			};
+			name = Release;
+		};
 		657DA05223704EF000D25F68 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -353,6 +473,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		655585752372FE58008379B5 /* Build configuration list for PBXNativeTarget "NetworkKitDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				655585732372FE58008379B5 /* Debug */,
+				655585742372FE58008379B5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		657DA03B23704EED00D25F68 /* Build configuration list for PBXProject "NetworkKitDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

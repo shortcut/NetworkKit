@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/shortcut/NetworkKit.svg?style=svg)](https://circleci.com/gh/shortcut/NetworkKit)
+
 # NetworkKit
 
 This package provides basic Networking.
