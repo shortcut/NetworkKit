@@ -6,7 +6,7 @@
 //  Copyright © 2019 Vikram. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public enum HTTPMethod: String {
     case get
@@ -19,27 +19,20 @@ public enum HTTPMethod: String {
     }
 }
 
-public enum NetworkStackError: Error {
-    case requestIsMissing
-    case paringError(Error)
+public enum NetworkError: Error {
     case invalidURL
+    case parsingError(Error)
     case responseError(Error)
     case dataMissing
     case responseMissing
+    case errorResponse(Decodable?)
+    case middlewareError(Error)
+    case validateError
+    case cancelled
 }
 
 public typealias HTTPHeaders = [String: String]
-public typealias ResultRequestCallback<T> = (Response<T, NetworkStackError>) -> Void
-public typealias ResultDecodableCallback<T> = (Result<T, NetworkStackError>) -> Void
-public typealias ResultDataCallback = (URLRequest?, URLResponse?, Result<Data, NetworkStackError>) -> Void
-public typealias ResultStatusCodeCallBack = (Result<Int, NetworkStackError>) -> Void
-public typealias TaskCallback = (Data?, URLResponse?, Error?) -> Void
-
-public enum ResponseType {
-    case statusCode
-    case data
-    case codable
-}
+public typealias ResultRequestCallback<T> = (Response<T>) -> Void
 
 public enum HTTPBodyType {
     case json
@@ -47,25 +40,38 @@ public enum HTTPBodyType {
     case none
 }
 
-public struct Response<Success, Failure: Error> {
-    public let request: URLRequest?
-    public let response: URLResponse?
-    public let data: Data?
-    public let result: Result<Success, Failure>
-    public var value: Success? { return try? result.get() }
-    public var error: Failure? {
-        guard case let .failure(error) = result else { return nil }
-        return error
+public struct Response<SuccessType> {
+    public var request: URLRequest?
+    public var response: URLResponse?
+
+    public var data: Data?
+    public let result: Result<SuccessType, NetworkError>
+
+    init(_ result: Result<SuccessType, NetworkError>) {
+        self.result = result
+    }
+
+    init(request: URLRequest?, response: URLResponse?, data: Data?, result: Result<SuccessType, NetworkError>) {
+        self.request = request
+        self.response = response
+        self.data = data
+        self.result = result
     }
 }
 
-public struct Request {
-    var task: URLSessionTask?
-    var error: Error?
-    var request: URLRequest?
-    var response: URLResponse?
+extension Response {
+    public var statusCode: Int? {
+         guard let response = self.response as? HTTPURLResponse else { return nil }
+         return response.statusCode
+     }
 
-    func cancel() {
-        task?.cancel()
-    }
+     public func localizedStringForStatusCode() -> String? {
+         guard let statusCode = self.statusCode else { return nil }
+         return HTTPURLResponse.localizedString(forStatusCode: statusCode)
+     }
+
+     public var allHeaderFields: [AnyHashable: Any]? {
+         guard let response = self.response as? HTTPURLResponse else { return nil }
+         return response.allHeaderFields
+     }
 }
