@@ -16,13 +16,13 @@ checks:
       threshold: 250
   method-complexity:
     config:
-      threshold: 5
+      threshold: 14 # hard
   method-count:
     config:
       threshold: 20
   method-lines:
     config:
-      threshold: 25
+      threshold: 40 # lol networking is hard?
   nested-control-flow:
     config:
       threshold: 4
