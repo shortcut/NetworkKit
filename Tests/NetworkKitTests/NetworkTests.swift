@@ -21,6 +21,10 @@ final class NetworkTests: XCTestCase {
         network = nil
     }
 
+    func testCanary() {
+        XCTFail("fail")
+    }
+    
     func testChainedRequests() {
         let expectation = XCTestExpectation(description: "string")
         let expectation2 = XCTestExpectation(description: "decode")
