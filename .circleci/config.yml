@@ -25,4 +25,4 @@ jobs:
       # and save the same XML files under test-results folder
       # in the Artifacts tab
       - store_test_results:
-          path: Examples/NetworkKitDemo/fastlane/test_output/report.xml
+          path: Examples/NetworkKitDemo/fastlane/report.xml
