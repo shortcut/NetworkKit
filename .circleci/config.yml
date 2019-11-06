@@ -25,10 +25,4 @@ jobs:
       # and save the same XML files under test-results folder
       # in the Artifacts tab
       - store_test_results:
-          path: test_output/report.xml
-      - store_artifacts:
-          path: /tmp/test-results
-          destination: scan-test-results
-      - store_artifacts:
-          path: ~/Library/Logs/scan
-          destination: scan-logs
+          path: ../Examples/NetworkKitDemo/fastlane/test_output/report.xml
