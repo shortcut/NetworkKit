@@ -34,7 +34,7 @@ public class NSCacheProvider: CacheProvider {
         if data == nil, object == nil {
             return
         }
-        
+
         let key = URLRequestKey(request: request)
         let item: CacheItem = getCache(for: key.request) ?? CacheItem(data: data, object: object)
 
