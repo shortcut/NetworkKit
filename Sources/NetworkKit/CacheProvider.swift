@@ -31,19 +31,14 @@ public class NSCacheProvider: CacheProvider {
     public init() {}
 
     public func setCache(for request: URLRequest, data: Data?, object: Any?) {
-        if data != nil || object != nil {
-            let key = URLRequestKey(request: request)
-            var item: CacheItem?
-            if let existingItem = getCache(for: key.request) {
-                item = existingItem
-            } else {
-                item = CacheItem(data: data, object: object)
-            }
-
-            if let item = item {
-                cache.setObject(item, forKey: URLRequestKey(request: request))
-            }
+        if data == nil, object == nil {
+            return
         }
+        
+        let key = URLRequestKey(request: request)
+        let item: CacheItem = getCache(for: key.request) ?? CacheItem(data: data, object: object)
+
+        cache.setObject(item, forKey: URLRequestKey(request: request))
     }
 
     public func getCache(for request: URLRequest) -> CacheItem? {

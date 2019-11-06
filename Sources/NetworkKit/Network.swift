@@ -10,6 +10,7 @@ import Foundation
 public typealias TaskIdentifier = Int
 
 public protocol NetworkType {
+    // swiftlint:disable:next function_parameter_count
     func request(withBaseURL baseURL: URL,
                  path: String,
                  method: HTTPMethod,
@@ -73,6 +74,7 @@ public class MockNetwork: NetworkType {
 }
 
 public class Network: NSObject, NetworkType {
+    // swiftlint:disable:next weak_delegate
     var sessionDelegate: NetworkSessionDelegate? = NetworkSessionDelegate()
     var urlSession: URLSession?
     var cacheProvider: CacheProvider
@@ -109,7 +111,9 @@ public class Network: NSObject, NetworkType {
 
 class NetworkSessionDelegate: NSObject, URLSessionDataDelegate {
     var requests = [TaskIdentifier: URLSessionDataRequest]()
-    let queue: DispatchQueue = DispatchQueue(label: "no.shortcut.NetworkKit.Network", attributes: .concurrent)
+    let queue: DispatchQueue = DispatchQueue(label: "no.shortcut.NetworkKit.Network",
+                                             qos: .userInitiated,
+                                             attributes: .concurrent)
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         queue.async(flags: .barrier) {

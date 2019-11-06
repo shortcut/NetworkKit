@@ -77,6 +77,7 @@ public class URLSessionDataRequest: NSObject, Request {
     func completeWithCache<Parser: ResponseParser>(parser: Parser,
                                                    block: @escaping ResponseCallback<Parser.ParsedObject>) -> Bool {
         // check cache and return early
+        // swiftlint:disable:next todo
         // TODO: need to check cachePolicy better
         if let urlRequest = self.urlRequest,
             let cacheItem = self.cacheProvider.getCache(for: urlRequest),
@@ -108,12 +109,12 @@ public class URLSessionDataRequest: NSObject, Request {
             }
         }
 
-        // no cache, so start network requests
+        // no cache, so start network requests if not already started
         startTask()
 
         operationQueue.addOperation {
 
-            // check if cancelled
+            // check if cancelled (not sure this ever does anything actually)
             if self.error == nil,
                 self.isCancelled == true ||
                     self.task?.state == .canceling {
@@ -167,6 +168,7 @@ public class URLSessionDataRequest: NSObject, Request {
     }
 
     private func startTask() {
+        // swiftlint:disable:next todo
         // TODO: better state management
         if let task = task,
             task.state != .running,
@@ -175,12 +177,11 @@ public class URLSessionDataRequest: NSObject, Request {
             isCancelled == false {
 
             task.resume()
-        } else {
-            print("oh no")
         }
     }
 
     private func finish() {
+        // swiftlint:disable:next todo
         // TODO: custom validation
         if let statusCode = statusCode {
             isSuccess = (statusCode < 400)

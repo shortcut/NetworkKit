@@ -1,6 +1,7 @@
 import Foundation
 
 /// Convenience access to the global Network session
+// swiftlint:disable:next type_name
 public enum NK {
     public static var sharedNetwork = Network()
     public static func request(withBaseURL baseURL: URL,
@@ -31,5 +32,9 @@ public enum NK {
 
     public static func request(_ urlString: String, method: HTTPMethod = .get) -> Request {
         return NK.sharedNetwork.request(urlString, method: method)
+    }
+
+    public static func request(_ urlRequest: URLRequest) -> Request {
+        return NK.sharedNetwork.request(urlRequest)
     }
 }

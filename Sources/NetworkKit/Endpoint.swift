@@ -34,7 +34,6 @@ public enum NetworkError: Error {
 public typealias HTTPHeaders = [String: String]
 public typealias ResultRequestCallback<T> = (Response<T>) -> Void
 
-
 public enum HTTPBodyType {
     case json
     case formEncoded(parameters: [String: String])

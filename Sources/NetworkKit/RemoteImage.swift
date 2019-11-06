@@ -9,24 +9,28 @@ import Foundation
 import UIKit
 
 public extension UIImageView {
-    func loadImage(from urlString: String,
-        placeHolder: UIImage? = nil) {
+    func loadImage(from urlString: String, placeHolder: UIImage? = nil) {
         if let placeHolder = placeHolder {
             self.image = placeHolder
         }
 
+        guard let url = URL(string: urlString) else {
+            return
+        }
+
         self.cancelImageLoad()
-        
-        if let request = NK.request(urlString) as? URLSessionDataRequest {
+
+        let urlRequest = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+        if let request = NK.request(urlRequest) as? URLSessionDataRequest {
             request.responseImage { response in
                 guard request.urlRequest == self.currentRequest?.urlRequest else {
                     return
                 }
-                
+
                 if case let .success(image) = response.result {
                     self.image = image
                 }
-                
+
                 self.currentRequest = nil
             }
             self.currentRequest = request

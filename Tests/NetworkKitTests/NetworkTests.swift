@@ -21,12 +21,12 @@ final class NetworkTests: XCTestCase {
         network = nil
     }
 
-    func testNetwork() {
+    func testChainedRequests() {
         let expectation = XCTestExpectation(description: "string")
         let expectation2 = XCTestExpectation(description: "decode")
         let expectation3 = XCTestExpectation(description: "decode")
 
-            let request = network?.request(HTTPStatusService.twoHundred(delay: 0))
+        let request = network?.request(HTTPStatusService.twoHundred(delay: 0))
         request?.responseString({ response in
 
             expectation.fulfill()
@@ -53,7 +53,8 @@ final class NetworkTests: XCTestCase {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 
-                self.network?.request(HTTPStatusService.twoHundred(delay: 0)).responseDecoded(of: TestModel.self) { response in
+                let target = HTTPStatusService.twoHundred(delay: 0)
+                self.network?.request(target).responseDecoded(of: TestModel.self) { response in
                     switch response.result {
                     case let .success(string):
                         print("yay! \(string)")
@@ -84,7 +85,7 @@ final class NetworkTests: XCTestCase {
                 expectation.fulfill()
             case let .failure(error):
                 print(error)
-                XCTFail()
+                XCTFail("shouldn't succeed")
             }
         }
 
@@ -97,7 +98,7 @@ final class NetworkTests: XCTestCase {
         network?.request(HTTPStatusService.fiveHundred).validate().responseDecoded(of: TestModel.self) { response in
             switch response.result {
             case .success:
-                XCTFail()
+                XCTFail("shouldn't succeed")
             case let .failure(error):
                 print(error)
             }
@@ -114,7 +115,7 @@ final class NetworkTests: XCTestCase {
         network?.request(URLRequest(url: URL(string: "lolwat")!)).response { response in
             switch response.result {
             case .success:
-                XCTFail()
+                XCTFail("shouldn't succeed")
             case let .failure(error):
                 print(error)
                 expectation.fulfill()

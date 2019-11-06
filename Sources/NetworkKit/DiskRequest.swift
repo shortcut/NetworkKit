@@ -27,7 +27,9 @@ class DiskRequest: NSObject, Request {
         return self
     }
 
-    func responseDecoded<T>(of type: T.Type, parser: DecodableParserProtocol?, completion: @escaping ResponseCallback<T>) -> Self where T: Decodable {
+    func responseDecoded<T>(of type: T.Type,
+                            parser: DecodableParserProtocol?,
+                            completion: @escaping ResponseCallback<T>) -> Self where T: Decodable {
         completion(Response(.failure(.dataMissing)))
         return self
     }
