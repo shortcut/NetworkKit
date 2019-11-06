@@ -16,7 +16,7 @@ jobs:
       # Build the app and run tests
       - run:
           name: Build and run tests
-          command: cd Examples/NetworkKitDemo && fastlane
+          command: cd Examples/NetworkKitDemo && fastlane tests
           environment:
             SCAN_DEVICE: iPhone 6
             SCAN_SCHEME: WebTests
