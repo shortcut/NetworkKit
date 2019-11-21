@@ -72,10 +72,12 @@ public class MockNetwork: NetworkType {
     public func request(_ urlRequest: URLRequest?) -> Request {
         return DiskRequest(urlRequest: urlRequest)
     }
-
+    public func request(_ urlRequest: URLRequest?, delay: TimeInterval) -> Request {
+        return DiskRequest(urlRequest: urlRequest, delay: delay)
+    }
     public func request(_ target: TargetType) -> Request {
         let url = URL(fileURLWithPath: target.diskPath ?? "")
-        return request(url)
+        return request(URLRequest(url: url), delay: target.diskDelay)
     }
 }
 
