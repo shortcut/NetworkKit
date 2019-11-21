@@ -18,16 +18,19 @@ public protocol TargetType {
     var queryParameters: QueryParameters? { get }
     var additionalHeaderValues: HTTPHeaders? { get }
     var cachePolicy: URLRequest.CachePolicy { get }
+    
+    var diskPath: String? { get } // for mocks using DiskRequest
 }
 
 // defaults
-extension TargetType {
+public extension TargetType {
     var bodyType: HTTPBodyType { .none }
     var body: Encodable? { nil }
     var queryParameters: QueryParameters? { nil }
     var headerValues: HTTPHeaders? { nil }
     var additionalHeaderValues: HTTPHeaders? { nil }
     var cachePolicy: URLRequest.CachePolicy { .useProtocolCachePolicy }
+    var diskPath: String? { nil }
 }
 
 extension TargetType {
