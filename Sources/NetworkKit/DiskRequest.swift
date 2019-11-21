@@ -21,14 +21,14 @@ class DiskRequest: NSObject, Request {
         let url = self.urlRequest?.url ?? URL(string: "")!
         return try? Data(contentsOf: url)
     }
-    
+
     func response(_ completion: @escaping ResponseCallback<Data>) -> Self {
         if let data = getDataFromDisk() {
             completion(Response(.success(data)))
         } else {
             completion(Response(.failure(.dataMissing)))
         }
-        
+
         return self
     }
 
@@ -39,7 +39,7 @@ class DiskRequest: NSObject, Request {
         } else {
             completion(Response(.failure(.dataMissing)))
         }
-        
+
         return self
     }
 
@@ -50,9 +50,9 @@ class DiskRequest: NSObject, Request {
         let data = self.getDataFromDisk()
         let parserResult = parser.parse(data: data)
             .mapError({ NetworkError.parsingError($0)}) as Result<T, NetworkError>
-        
+
         completion(Response(parserResult))
-        
+
         return self
     }
 

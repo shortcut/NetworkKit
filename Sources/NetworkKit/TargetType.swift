@@ -18,7 +18,7 @@ public protocol TargetType {
     var queryParameters: QueryParameters? { get }
     var additionalHeaderValues: HTTPHeaders? { get }
     var cachePolicy: URLRequest.CachePolicy { get }
-    
+
     var diskPath: String? { get } // for mocks using DiskRequest
 }
 

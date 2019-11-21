@@ -72,7 +72,7 @@ public class MockNetwork: NetworkType {
     public func request(_ urlRequest: URLRequest?) -> Request {
         return DiskRequest(urlRequest: urlRequest)
     }
-    
+
     public func request(_ target: TargetType) -> Request {
         let url = URL(fileURLWithPath: target.diskPath ?? "")
         return request(url)
