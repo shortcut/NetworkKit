@@ -12,15 +12,14 @@ import ReactiveKit
 
 extension Request {
     @discardableResult
-    public func response() -> LoadingSignal<Data, NetworkError> {
-        LoadingSignal<Data, NetworkError> { observer in
-            observer.receive(.loading)
+    public func response() -> Signal<Data, NetworkError> {
+        Signal<Data, NetworkError> { observer in
             let request = self.response { response in
                 switch response.result {
                 case let .success(data):
-                    observer.receive(lastElement: .loaded(data))
+                    observer.receive(lastElement: data)
                 case let .failure(error):
-                    observer.receive(.failed(error))
+                    observer.receive(completion: .failure(error))
                 }
             }
 
@@ -31,15 +30,14 @@ extension Request {
     }
 
     @discardableResult
-    public func responseString() -> LoadingSignal<String, NetworkError> {
-        LoadingSignal<String, NetworkError> { observer in
-            observer.receive(.loading)
+    public func responseString() -> Signal<String, NetworkError> {
+        Signal<String, NetworkError> { observer in
             let request = self.responseString { response in
                 switch response.result {
                 case let .success(string):
-                    observer.receive(lastElement: .loaded(string))
+                    observer.receive(lastElement: string)
                 case let .failure(error):
-                    observer.receive(.failed(error))
+                    observer.receive(completion: .failure(error))
                 }
             }
 
@@ -50,15 +48,14 @@ extension Request {
     }
 
     @discardableResult
-    func responseDecoded<T: Decodable>(of type: T.Type) -> LoadingSignal<T, NetworkError> {
-        LoadingSignal<T, NetworkError> { observer in
-            observer.receive(.loading)
+    func responseDecoded<T: Decodable>(of type: T.Type) -> Signal<T, NetworkError> {
+        Signal<T, NetworkError> { observer in
             let request = self.responseDecoded(of: T.self, parser: DecodableJSONParser()) { response in
                 switch response.result {
-                case let .success(orderResponse):
-                    observer.receive(lastElement: .loaded(orderResponse))
+                case let .success(decodedObject):
+                    observer.receive(lastElement: decodedObject)
                 case let .failure(error):
-                    observer.receive(.failed(error))
+                    observer.receive(completion: .failure(error))
                 }
             }
 
