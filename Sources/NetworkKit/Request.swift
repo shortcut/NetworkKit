@@ -79,6 +79,7 @@ public class URLSessionDataRequest: NSObject, Request {
         let task = urlSession.dataTask(with: urlRequest)
         self.task = task
         taskCreation?(task)
+        taskCreation = nil
     }
 
     public func withAdapter(_ adapter: RequestAdapter) -> Self {
