@@ -8,6 +8,12 @@
 import Foundation
 
 class DiskRequest: NSObject, Request {
+    func withAdapter(_ adapter: RequestAdapter) -> Self {
+        adapters.append(adapter)
+        return self
+    }
+
+    var adapters = [RequestAdapter]()
 
     var isSuccess: Bool = true
     var data: Data?

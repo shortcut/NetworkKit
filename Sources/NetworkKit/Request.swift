@@ -9,12 +9,19 @@ import Foundation
 
 public typealias ResponseCallback<SuccessType> = (Response<SuccessType>) -> Void
 
+public protocol RequestAdapter {
+    func adapt(_ urlRequest: URLRequest) -> URLRequest
+}
+
 public protocol Request: RequestResponses {
     var urlRequest: URLRequest? { get }
     var response: URLResponse? { get }
     var data: Data? { get }
     var error: Error? { get }
     var isSuccess: Bool { get }
+
+    var adapters: [RequestAdapter] { get }
+    func withAdapter(_ adapter: RequestAdapter) -> Self
 
     func validate() -> Self
     func cancel()
@@ -31,9 +38,13 @@ public class URLSessionDataRequest: NSObject, Request {
     public let urlSession: URLSession
 
     var task: URLSessionTask?
+    public var taskCreation: ((URLSessionTask) -> Void)?
+
     private var receivedData: Data? = Data()
     public var data: Data?
     public var error: Error?
+
+    public var adapters = [RequestAdapter]()
 
     public var response: URLResponse?
     public var isSuccess: Bool = true
@@ -42,9 +53,6 @@ public class URLSessionDataRequest: NSObject, Request {
     private var isCancelled = false
 
     var cacheProvider: CacheProvider
-
-    deinit {
-    }
 
     public init(urlSession: URLSession,
                 urlRequest: URLRequest?,
@@ -55,18 +63,27 @@ public class URLSessionDataRequest: NSObject, Request {
         self.urlRequest = urlRequest
         self.defaultParser = defaultParser
         super.init()
-
-        self.prepareTask()
     }
 
     private func prepareTask() {
         operationQueue.isSuspended = true
 
-        guard let urlRequest = urlRequest else {
+        guard var urlRequest = urlRequest else {
             return
         }
 
-        task = urlSession.dataTask(with: urlRequest)
+        for adapter in adapters {
+            urlRequest = adapter.adapt(urlRequest)
+        }
+
+        let task = urlSession.dataTask(with: urlRequest)
+        self.task = task
+        taskCreation?(task)
+    }
+
+    public func withAdapter(_ adapter: RequestAdapter) -> Self {
+        adapters.append(adapter)
+        return self
     }
 
     public func cancel() {
@@ -97,16 +114,19 @@ public class URLSessionDataRequest: NSObject, Request {
     func addParseOperation<Parser: ResponseParser>(parser: Parser,
                                                    block: @escaping ResponseCallback<Parser.ParsedObject>) {
 
-        guard let urlRequest = urlRequest else {
-            block(responseWithResult(.failure(.invalidURL)))
-            return
-        }
-
         // try our cache, return early if we gots it
         queue.sync {
             if completeWithCache(parser: parser, block: block) {
                 return
             }
+        }
+
+        // get everything ready for this request
+        prepareTask()
+
+        guard let urlRequest = urlRequest else {
+            block(responseWithResult(.failure(.invalidURL)))
+            return
         }
 
         // no cache, so start network requests if not already started
