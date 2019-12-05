@@ -73,8 +73,10 @@ public protocol DecodableParserProtocol {
 }
 
 public class DecodableJSONParser: DecodableParserProtocol {
-    let jsonDecoder = JSONDecoder()
-    public init(decoder: JSONDecoder = JSONDecoder()) {}
+    let jsonDecoder: JSONDecoder
+    public init(decoder: JSONDecoder = JSONDecoder()) {
+        self.jsonDecoder = decoder
+    }
 
     public func parse<T>(data: Data?) -> Result<T, ParserError> where T: Decodable {
         guard let data = data else {

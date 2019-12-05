@@ -25,7 +25,7 @@ class DiskRequest: NSObject, Request {
     }
 
     func getDataFromDisk() -> Data? {
-        let url = self.urlRequest?.url ?? URL(string: "")!
+        let url = self.urlRequest?.url ?? URL(string: "asdf")!
         return try? Data(contentsOf: url)
     }
 

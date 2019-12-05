@@ -34,7 +34,7 @@ public class URLSessionDataRequest: NSObject, Request {
     private var workItems = [DispatchWorkItem]()
 
     let defaultParser: DecodableParserProtocol
-    public let urlRequest: URLRequest?
+    public var urlRequest: URLRequest?
     public let urlSession: URLSession
 
     var task: URLSessionTask?
@@ -76,6 +76,8 @@ public class URLSessionDataRequest: NSObject, Request {
             urlRequest = adapter.adapt(urlRequest)
         }
 
+        self.urlRequest = urlRequest
+        
         let task = urlSession.dataTask(with: urlRequest)
         self.task = task
         taskCreation?(task)
