@@ -42,7 +42,6 @@ extension NetworkType {
                                   path: path,
                                   httpMethod: method,
                                   headerValues: headerValues,
-                                  additionalHeaderValues: nil,
                                   queryParameters: query,
                                   bodyType: bodyType,
                                   body: body))

@@ -32,7 +32,6 @@ public extension URLRequest {
           path: String,
           httpMethod: HTTPMethod,
           headerValues: HTTPHeaders? = nil,
-          additionalHeaderValues: HTTPHeaders? = nil,
           queryParameters: QueryParameters? = nil,
           bodyType: HTTPBodyType,
           body: Encodable? = nil,
@@ -44,10 +43,6 @@ public extension URLRequest {
         request.httpMethod = httpMethod.value
 
         if let headerValues = headerValues {
-            headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        }
-
-        if let headerValues = additionalHeaderValues {
             headerValues.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }
 

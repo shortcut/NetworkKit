@@ -77,7 +77,7 @@ public class URLSessionDataRequest: NSObject, Request {
         }
 
         self.urlRequest = urlRequest
-        
+
         let task = urlSession.dataTask(with: urlRequest)
         self.task = task
         taskCreation?(task)
@@ -199,7 +199,9 @@ public class URLSessionDataRequest: NSObject, Request {
             task.state != .completed,
             isCancelled == false {
 
-            task.resume()
+            urlSession.delegateQueue.addOperation {
+                task.resume()
+            }
         }
     }
 
