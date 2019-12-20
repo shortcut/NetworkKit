@@ -15,18 +15,46 @@ class DiskRequest: NSObject, Request {
 
     var adapters = [RequestAdapter]()
 
-    var isSuccess: Bool = true
     var data: Data?
-    var error: Error?
+    var error: NetworkError?
     var delay: TimeInterval = 0
+    var errorModelPath: URL?
+
+    init(urlRequest: URLRequest?, errorModelPath: URL? = nil, delay: TimeInterval = 0) {
+        self.urlRequest = urlRequest
+        self.errorModelPath = errorModelPath
+        self.delay = delay
+    }
+
+    private func getDataFromDisk(getErrorModel: Bool = false) -> Data? {
+        if !getErrorModel {
+            let url = self.urlRequest?.url ?? URL(string: "asdf")!
+            return try? Data(contentsOf: url)
+        } else if let url = self.errorModelPath {
+            return try? Data(contentsOf: url)
+        }
+
+        return nil
+    }
 
     func validate() -> Self {
+        // no-op
         return self
     }
 
-    func getDataFromDisk() -> Data? {
-        let url = self.urlRequest?.url ?? URL(string: "asdf")!
-        return try? Data(contentsOf: url)
+    func validate(_ successBlock: @escaping ValidationBlock) -> Self {
+        if !successBlock(self.data, self.response, self.error) {
+            self.error = NetworkError.validateError
+        }
+        return self
+    }
+
+    func validate(with validator: ResponseValidator) -> Self {
+        if !validator.validate(data: self.data, urlResponse: self.response, error: self.error) {
+            self.error = NetworkError.validateError
+        }
+
+        return self
     }
 
     func response(_ completion: @escaping ResponseCallback<Data>) -> Self {
@@ -89,15 +117,47 @@ class DiskRequest: NSObject, Request {
         return self
     }
 
+    func responseDecoded<T, E>(of type: T.Type,
+                               errorType: E.Type,
+                               parser: DecodableParserProtocol?,
+                               completion: @escaping (Response<T>) -> Void) -> Self where T: Decodable, E: Decodable {
+        var parserResult: Result<T, NetworkError>?
+
+        DispatchQueue.global(qos: .background).async {
+            if self.error == nil {
+                let parser = parser ?? DecodableJSONParser()
+                let data = self.getDataFromDisk()
+                parserResult = parser.parse(data: data)
+                    .mapError({ NetworkError.parsingError($0)}) as Result<T, NetworkError>
+
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + self.delay, execute: {
+                    if let parserResult = parserResult {
+                        completion(Response(parserResult))
+                    }
+                })
+            } else if let error = self.error,
+                case .validateError = error {
+                let parser = parser ?? DecodableJSONParser()
+                let data = self.getDataFromDisk()
+                parserResult = parser.parse(data: data)
+                    .mapError({ NetworkError.parsingError($0)}) as Result<T, NetworkError>
+
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + self.delay, execute: {
+                    if let parserResult = parserResult {
+                        completion(Response(parserResult))
+                    }
+                })
+
+            }
+        }
+
+        return responseDecoded(of: type, parser: parser, completion: completion)
+    }
+
     func cancel() {
         // no-op
     }
 
     var urlRequest: URLRequest?
     var response: URLResponse?
-
-    init(urlRequest: URLRequest?, delay: TimeInterval = 0) {
-        self.delay = delay
-        self.urlRequest = urlRequest
-    }
 }

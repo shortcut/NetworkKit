@@ -4,21 +4,20 @@ import Foundation
 // swiftlint:disable:next type_name
 public enum NK {
     public static var sharedNetwork = Network()
-    public static func request(withBaseURL baseURL: URL,
-                               path: String,
+    public static func request(URL: URL,
                                method: HTTPMethod,
                                bodyType: HTTPBodyType = .none,
                                headerValues: HTTPHeaders? = nil,
                                body: Encodable? = nil,
                                queryParameters query: QueryParameters? = nil) -> Request {
 
-        return NK.sharedNetwork.request(URLRequest(baseURL: baseURL,
-                                                path: path,
-                                                httpMethod: method,
-                                                headerValues: headerValues,
-                                                queryParameters: query,
-                                                bodyType: bodyType,
-                                                body: body))
+        return NK.sharedNetwork.request(URLRequest(baseURL: URL,
+                                                   path: "",
+                                                   httpMethod: method,
+                                                   headerValues: headerValues,
+                                                   queryParameters: query,
+                                                   bodyType: bodyType,
+                                                   body: body))
     }
 
     public static func request(_ target: TargetType) -> Request {

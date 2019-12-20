@@ -25,7 +25,7 @@ public enum NetworkError: Error {
     case responseError(Error)
     case dataMissing
     case responseMissing
-    case errorResponse(Decodable?)
+    case errorResponse(Decodable)
     case middlewareError(Error)
     case validateError
     case cancelled
@@ -45,16 +45,10 @@ public struct Response<SuccessType> {
     public var response: URLResponse?
 
     public var data: Data?
-    public let result: Result<SuccessType, NetworkError>
+    public var result: Result<SuccessType, NetworkError>
+    public var responseIsFromCacheProvider: Bool = false
 
     init(_ result: Result<SuccessType, NetworkError>) {
-        self.result = result
-    }
-
-    init(request: URLRequest?, response: URLResponse?, data: Data?, result: Result<SuccessType, NetworkError>) {
-        self.request = request
-        self.response = response
-        self.data = data
         self.result = result
     }
 }

@@ -7,12 +7,10 @@
 
 import Foundation
 
-public typealias TaskIdentifier = Int
-
+/// main interface into the Network stack
 public protocol NetworkType {
     // swiftlint:disable:next function_parameter_count
-    func request(withBaseURL baseURL: URL,
-                 path: String,
+    func request(URL: URL,
                  method: HTTPMethod,
                  bodyType: HTTPBodyType,
                  headerValues: HTTPHeaders?,
@@ -30,16 +28,15 @@ extension NetworkType {
         return request(URL(string: urlString), method: method)
     }
 
-    public func request(withBaseURL baseURL: URL,
-                        path: String,
+    public func request(URL: URL,
                         method: HTTPMethod,
                         bodyType: HTTPBodyType = .none,
                         headerValues: HTTPHeaders? = nil,
                         body: Encodable? = nil,
                         queryParameters query: QueryParameters? = nil) -> Request {
 
-        return request(URLRequest(baseURL: baseURL,
-                                  path: path,
+        return request(URLRequest(baseURL: URL,
+                                  path: "",
                                   httpMethod: method,
                                   headerValues: headerValues,
                                   queryParameters: query,
@@ -66,39 +63,46 @@ extension NetworkType {
     }
 }
 
+/// mock implementation of NetworkType using disk requests
 public class MockNetwork: NetworkType {
     public init() {}
     public func request(_ urlRequest: URLRequest?) -> Request {
         return DiskRequest(urlRequest: urlRequest)
     }
-    public func request(_ urlRequest: URLRequest?, delay: TimeInterval) -> Request {
-        return DiskRequest(urlRequest: urlRequest, delay: delay)
+    public func request(_ urlRequest: URLRequest?, errorModelPath: URL?, delay: TimeInterval) -> Request {
+        return DiskRequest(urlRequest: urlRequest, errorModelPath: errorModelPath, delay: delay)
     }
     public func request(_ target: TargetType) -> Request {
         let url = URL(fileURLWithPath: target.diskPath ?? "")
-        return request(URLRequest(url: url), delay: target.diskDelay)
+        let errorModelUrl = target.diskPathErrorModel != nil ? URL(string: target.diskPathErrorModel!) : nil
+
+        return request(URLRequest(url: url),
+                       errorModelPath: errorModelUrl,
+                       delay: target.diskDelay)
     }
 }
 
+/// default implementation of NetworkType using URLSession
 public class Network: NSObject, NetworkType {
     // swiftlint:disable:next weak_delegate
     var sessionDelegate: NetworkSessionDelegate? = NetworkSessionDelegate()
     var urlSession: URLSession?
     var cacheProvider: CacheProvider
-    let defaultParser: DecodableParserProtocol = DecodableJSONParser()
+    let defaultParser: DecodableParserProtocol
 
     deinit {
-        print("bye network")
         urlSession?.invalidateAndCancel()
         sessionDelegate = nil
         urlSession = nil
     }
 
     public init(urlSessionConfiguration: URLSessionConfiguration = .default,
-                cacheProvider: CacheProvider = NSCacheProvider()) {
+                cacheProvider: CacheProvider = NSCacheProvider(),
+                defaultDecodableParser: DecodableParserProtocol = DecodableJSONParser()) {
         self.cacheProvider = cacheProvider
         self.urlSession = URLSession(configuration: urlSessionConfiguration,
                                      delegate: self.sessionDelegate, delegateQueue: nil)
+        self.defaultParser = defaultDecodableParser
     }
 
     public func request(_ urlRequest: URLRequest?) -> Request {
@@ -119,10 +123,13 @@ public class Network: NSObject, NetworkType {
     }
 }
 
-class NetworkSessionDelegate: NSObject, URLSessionDataDelegate {
+internal typealias TaskIdentifier = Int
+
+/// URLSessionDataDelegate mapping each task to its corresponding Request
+internal class NetworkSessionDelegate: NSObject, URLSessionDataDelegate {
     var requests = [TaskIdentifier: URLSessionDataRequest]()
     let queue: DispatchQueue = DispatchQueue(label: "no.shortcut.NetworkKit.Network",
-                                             qos: .userInitiated,
+                                             qos: .background,
                                              attributes: .concurrent)
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
