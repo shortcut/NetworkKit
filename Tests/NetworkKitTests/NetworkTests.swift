@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  NetworkTests.swift
 //  
 //
 //  Created by Andre Navarro on 10/21/19.
@@ -92,10 +92,12 @@ final class NetworkTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
     }
 
-    func testErrorClient() {
+    func testDefaultValidation() {
         let expectation = XCTestExpectation(description: "should fail after a request that returns code 500")
 
         network?.request(HTTPStatusService.fiveHundred).validate().responseDecoded(of: TestModel.self) { response in
+            XCTAssertTrue(Thread.isMainThread)
+
             switch response.result {
             case .success:
                 XCTFail("shouldn't succeed")
@@ -104,6 +106,77 @@ final class NetworkTests: XCTestCase {
             }
 
             expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testBlockValidation() {
+        let expectation = XCTestExpectation(description: "should fail after a request that returns code 500")
+
+        network?.request(HTTPStatusService.fiveHundred).validate({ (_, response, _) -> Bool in
+            if let response = response as? HTTPURLResponse,
+                response.statusCode == 500 {
+                // should be status 500
+            } else {
+                XCTFail("should have a HTTP response and status code")
+            }
+            return false
+        }).responseDecoded(of: TestModel.self) { response in
+            XCTAssertTrue(Thread.isMainThread)
+
+            switch response.result {
+            case .success:
+                XCTFail("shouldn't succeed")
+            case let .failure(error):
+                print(error)
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testValidationWithValidator() {
+        let expectation = XCTestExpectation(description: "should fail after a request that returns code 500")
+
+        network?.request(HTTPStatusService.fiveHundred)
+            .validate(with: FailValidator()).responseDecoded(of: TestModel.self) { response in
+            XCTAssertTrue(Thread.isMainThread)
+
+            switch response.result {
+            case .success:
+                XCTFail("shouldn't succeed")
+            case let .failure(error):
+                print(error)
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testErrorResponse() {
+        let expectation = XCTestExpectation(description: "should parse error model as error")
+
+        network?.request(HTTPStatusService.fiveHundred)
+            .validate()
+            .responseDecoded(of: TestModel.self,
+                             errorType: TestErrorModel.self) { response in
+                XCTAssertTrue(Thread.isMainThread)
+
+                switch response.result {
+                case .success:
+                    XCTFail("shouldn't succeed")
+                case let .failure(error):
+                    if case let .errorResponse(errorObject) = error,
+                        errorObject is TestErrorModel {
+                        expectation.fulfill()
+                    }
+                    print(error)
+                }
         }
 
         wait(for: [expectation], timeout: 5)

@@ -84,12 +84,13 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
 
         cell.backgroundColor = .black
 
-        let urlString = "https://robohash.org/\(indexPath.row)?size=40x40"
+        let urlString = "https://robohash.org/\(indexPath.row)?size=400x400"
 
         cell.imageView.loadImage(from: urlString, placeHolder: UIImage(named: "0"))
         return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.reloadData()
     }
 }

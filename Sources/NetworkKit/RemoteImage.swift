@@ -77,6 +77,8 @@ public extension URLSessionDataRequest {
     @discardableResult
     func responseImage(completion: @escaping ResponseCallback<UIImage>) -> Self {
 
+        startTask()
+
         self.addParseOperation(parser: ImageParser()) { response in
             OperationQueue.main.addOperation {
                 completion(response)

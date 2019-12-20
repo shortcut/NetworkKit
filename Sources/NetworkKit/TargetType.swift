@@ -18,7 +18,9 @@ public protocol TargetType {
     var queryParameters: QueryParameters? { get }
     var cachePolicy: URLRequest.CachePolicy { get }
 
-    var diskPath: String? { get } // for mocks using DiskRequest
+    // for mocks using DiskRequest
+    var diskPath: String? { get }
+    var diskPathErrorModel: String? { get }
     var diskDelay: TimeInterval { get }
 }
 
@@ -30,6 +32,7 @@ public extension TargetType {
     var headerValues: HTTPHeaders? { nil }
     var cachePolicy: URLRequest.CachePolicy { .useProtocolCachePolicy }
     var diskPath: String? { nil }
+    var diskPathErrorModel: String? { nil }
     var diskDelay: TimeInterval { 0 }
 }
 
