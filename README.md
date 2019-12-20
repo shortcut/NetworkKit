@@ -156,3 +156,30 @@ network?.request(AuthAPI.authenticate(with: credentials))
 }
 
 ```
+
+### Request Adaptors
+
+If you'd like to adapt the URLRequest before transport, you can pass in a RequestAdaptor to your request, for example if you'd like to add runtime authentication headers:
+
+```swift
+public struct AuthenticationAdapter: RequestAdapter {
+    let accessToken: AccessToken
+
+    public func adapt(_ urlRequest: URLRequest) -> URLRequest {
+        var urlRequest = urlRequest
+        urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        return urlRequest
+    }
+}
+
+self.network.request(target)
+    .withAdapter(AuthenticationAdapter(accessToken: accessToken))
+    .responseDecoded(of: T.self) { response in
+        switch response.result {
+        case let .success(products):
+            completion(.success(products))
+        case let .failure(error):
+            completion(.failure(ApplicationError.networkError(error)))
+        }
+}
+```
