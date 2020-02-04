@@ -111,11 +111,9 @@ public class Network: NSObject, NetworkType {
                                                cacheProvider: cacheProvider,
                                                defaultParser: defaultParser)
 
-        ourRequest.taskCreation = { task in
-            if let taskId = ourRequest.task?.taskIdentifier {
-                self.sessionDelegate?.queue.async(flags: .barrier) {
-                    self.sessionDelegate?.requests[taskId] = ourRequest
-                }
+        ourRequest.taskCreation = { [weak ourRequest] task in
+            self.sessionDelegate?.queue.async(flags: .barrier) {
+                self.sessionDelegate?.requests[task.taskIdentifier] = ourRequest
             }
         }
 

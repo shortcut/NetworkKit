@@ -38,7 +38,7 @@ final class NetworkTests: XCTestCase {
                 print("error: \(error)")
             }
 
-            })
+        })
 
         request?.responseDecoded(of: TestModel.self) { response in
 
