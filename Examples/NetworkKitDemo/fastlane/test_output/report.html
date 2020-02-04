@@ -110,7 +110,9 @@
       </section>
       <section class="right">
         <section id="counters">
-          <h2 id="test-count"><span class="number">5</span> tests</h2>
+          <h2 id="test-count"><span class="number">9</span> tests</h2>
+          
+            <h2 id="fail-count"><span class="number">4</span> failures</h2>
           
         </section>
         <section id="segment-bar">
@@ -121,7 +123,7 @@
     <section id="test-suites">
       
         
-        <section class="test-suite passing" id="NetworkKitTests.NetworkTests">
+        <section class="test-suite failing" id="NetworkKitTests.NetworkTests">
           <section class="heading" onclick="toggleTests(this);">
             <h3 class="title">NetworkKitTests.NetworkTests</h3>
           </section>
@@ -129,10 +131,36 @@
             <table>
             
               
-              <tr class="test passing "  onclick="toggleDetails('testCancelRequest');">
+              <tr class="test failing "  onclick="toggleDetails('testBlockValidation');">
                 <td>
                   
-                    <h3 class="time">0.022s</h3>
+                </td>
+                <td><h3 class="title">testBlockValidation</h3></td>
+              </tr>
+              
+                <tr class="details failing testBlockValidation">
+                  <td></td>
+                  <td>
+                    
+                      <section class="test-detail reason">failed - should have a HTTP response and status code</section>
+                    
+                    
+                      <section class="test-detail snippet">            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="kt">XCTFail</span><span class="p">(</span><span class="s">"should have a HTTP response and status code"</span><span class="p">)</span>
+            <span class="p">}</span>
+</section>
+                      <section class="test-detail">/Users/andre/Dev/NetworkKit/Tests/NetworkKitTests/NetworkTests.swift:122</section>
+                    
+                    
+                  </td>
+                </tr>
+              
+            
+              
+              <tr class="test passing odd"  onclick="toggleDetails('testCancelRequest');">
+                <td>
+                  
+                    <h3 class="time">0.004s</h3>
                   
                 </td>
                 <td><h3 class="title">testCancelRequest</h3></td>
@@ -140,10 +168,10 @@
               
             
               
-              <tr class="test passing odd"  onclick="toggleDetails('testChainedRequests');">
+              <tr class="test passing "  onclick="toggleDetails('testChainedRequests');">
                 <td>
                   
-                    <h3 class="time">2.425s</h3>
+                    <h3 class="time">1.090s</h3>
                   
                 </td>
                 <td><h3 class="title">testChainedRequests</h3></td>
@@ -151,21 +179,47 @@
               
             
               
-              <tr class="test passing "  onclick="toggleDetails('testErrorClient');">
+              <tr class="test passing odd"  onclick="toggleDetails('testDefaultValidation');">
                 <td>
                   
-                    <h3 class="time">1.019s</h3>
+                    <h3 class="time">0.050s</h3>
                   
                 </td>
-                <td><h3 class="title">testErrorClient</h3></td>
+                <td><h3 class="title">testDefaultValidation</h3></td>
               </tr>
+              
+            
+              
+              <tr class="test failing "  onclick="toggleDetails('testErrorResponse');">
+                <td>
+                  
+                </td>
+                <td><h3 class="title">testErrorResponse</h3></td>
+              </tr>
+              
+                <tr class="details failing testErrorResponse">
+                  <td></td>
+                  <td>
+                    
+                      <section class="test-detail reason">Asynchronous wait failed: Exceeded timeout of 5 seconds, with unfulfilled expectations: "should parse error model as error".</section>
+                    
+                    
+                      <section class="test-detail snippet">
+        <span class="nf">wait</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="p">[</span><span class="n">expectation</span><span class="p">],</span> <span class="nv">timeout</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="p">}</span>
+</section>
+                      <section class="test-detail">/Users/andre/Dev/NetworkKit/Tests/NetworkKitTests/NetworkTests.swift:182</section>
+                    
+                    
+                  </td>
+                </tr>
               
             
               
               <tr class="test passing odd"  onclick="toggleDetails('testInvalidURL');">
                 <td>
                   
-                    <h3 class="time">0.004s</h3>
+                    <h3 class="time">0.012s</h3>
                   
                 </td>
                 <td><h3 class="title">testInvalidURL</h3></td>
@@ -173,13 +227,65 @@
               
             
               
-              <tr class="test passing "  onclick="toggleDetails('testSuccessClient');">
+              <tr class="test failing "  onclick="toggleDetails('testSuccessClient');">
                 <td>
-                  
-                    <h3 class="time">0.758s</h3>
                   
                 </td>
                 <td><h3 class="title">testSuccessClient</h3></td>
+              </tr>
+              
+                <tr class="details failing testSuccessClient">
+                  <td></td>
+                  <td>
+                    
+                      <section class="test-detail reason">failed - shouldn't succeed</section>
+                    
+                    
+                      <section class="test-detail snippet">                <span class="nf">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+                <span class="kt">XCTFail</span><span class="p">(</span><span class="s">"shouldn't succeed"</span><span class="p">)</span>
+            <span class="p">}</span>
+</section>
+                      <section class="test-detail">/Users/andre/Dev/NetworkKit/Tests/NetworkKitTests/NetworkTests.swift:88</section>
+                    
+                    
+                  </td>
+                </tr>
+              
+            
+              
+              <tr class="test failing odd"  onclick="toggleDetails('testSuccessClient');">
+                <td>
+                  
+                </td>
+                <td><h3 class="title">testSuccessClient</h3></td>
+              </tr>
+              
+                <tr class="details failing testSuccessClient">
+                  <td></td>
+                  <td>
+                    
+                      <section class="test-detail reason">Asynchronous wait failed: Exceeded timeout of 5 seconds, with unfulfilled expectations: "should make a sucessful get request and decode the response".</section>
+                    
+                    
+                      <section class="test-detail snippet">
+        <span class="nf">wait</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="p">[</span><span class="n">expectation</span><span class="p">],</span> <span class="nv">timeout</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="p">}</span>
+</section>
+                      <section class="test-detail">/Users/andre/Dev/NetworkKit/Tests/NetworkKitTests/NetworkTests.swift:92</section>
+                    
+                    
+                  </td>
+                </tr>
+              
+            
+              
+              <tr class="test passing "  onclick="toggleDetails('testValidationWithValidator');">
+                <td>
+                  
+                    <h3 class="time">0.008s</h3>
+                  
+                </td>
+                <td><h3 class="title">testValidationWithValidator</h3></td>
               </tr>
               
             

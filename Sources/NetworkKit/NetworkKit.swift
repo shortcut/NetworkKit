@@ -1,6 +1,6 @@
 import Foundation
 
-/// Convenience access to the global Network session
+// Convenience access to the global Network session
 // swiftlint:disable:next type_name
 public enum NK {
     public static var sharedNetwork = Network()
