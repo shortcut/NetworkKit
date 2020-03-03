@@ -14,17 +14,21 @@ public protocol ResponseValidator {
 }
 
 /// for use with mocks or tests that want to fail validation
-struct FailValidator: ResponseValidator {
-    func validate(data: Data?, urlResponse: URLResponse?, error: Error?) -> Bool {
+public struct FailValidator: ResponseValidator {
+    public init() { }
+
+    public func validate(data: Data?, urlResponse: URLResponse?, error: Error?) -> Bool {
         false
     }
 }
 
 /// most common validation, checking status code between 200 and 299
-struct DefaultResponseValidator: ResponseValidator {
+public struct DefaultResponseValidator: ResponseValidator {
+    public init() { }
+
     fileprivate var acceptableStatusCodes: Range<Int> { return 200..<300 }
 
-    func validate(data: Data?, urlResponse: URLResponse?, error: Error?) -> Bool {
+    public func validate(data: Data?, urlResponse: URLResponse?, error: Error?) -> Bool {
         if let response = urlResponse as? HTTPURLResponse {
             return acceptableStatusCodes.contains(response.statusCode)
         }

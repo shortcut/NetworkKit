@@ -201,7 +201,7 @@ final class NetworkTests: XCTestCase {
     func testCancelRequest() {
         let expectation = XCTestExpectation(description: "should cancel a request")
 
-        let request = network?.request(HTTPStatusService.twoHundred(delay: 5))
+        let request = network?.request(HTTPStatusService.twoHundred(delay: 2))
 
         request?.responseDecoded(of: TestModel.self) { response in
             switch response.result {
@@ -209,12 +209,13 @@ final class NetworkTests: XCTestCase {
                 XCTFail("the request should fail")
             case let .failure(error):
                 XCTAssertNil(response.data)
-
-                guard case let .responseError(responseError) = error else {
-                    return
+                
+                var cancelled = false
+                if case .cancelled = error {
+                    cancelled = true
                 }
-
-                XCTAssertEqual((responseError as NSError).code, NSURLErrorCancelled)
+                
+                XCTAssert(cancelled)
             }
 
             expectation.fulfill()

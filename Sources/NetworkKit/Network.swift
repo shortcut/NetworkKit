@@ -74,7 +74,7 @@ public class MockNetwork: NetworkType {
     }
     public func request(_ target: TargetType) -> Request {
         let url = URL(fileURLWithPath: target.diskPath ?? "")
-        let errorModelUrl = target.diskPathErrorModel != nil ? URL(string: target.diskPathErrorModel!) : nil
+        let errorModelUrl = target.diskPathErrorModel != nil ? URL(fileURLWithPath: target.diskPathErrorModel!) : nil
 
         return request(URLRequest(url: url),
                        errorModelPath: errorModelUrl,
