@@ -138,10 +138,16 @@ class DiskRequest: NSObject, Request {
             } else if let error = self.error,
                 case .validateError = error {
                 let parser = parser ?? DecodableJSONParser()
-                let data = self.getDataFromDisk()
-                parserResult = parser.parse(data: data)
-                    .mapError({ NetworkError.parsingError($0)}) as Result<T, NetworkError>
-
+                let data = self.getDataFromDisk(getErrorModel: true)
+                let errorModelParseResult = parser.parse(data: data) as Result<E, ParserError>
+                print(errorModelParseResult)
+                if let errorModel = try? errorModelParseResult.get() {
+                    parserResult = .failure(.errorResponse(errorModel))
+                }
+                else {
+                    parserResult = .failure(.validateError)
+                }
+                
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + self.delay, execute: {
                     if let parserResult = parserResult {
                         completion(Response(parserResult))
@@ -151,7 +157,7 @@ class DiskRequest: NSObject, Request {
             }
         }
 
-        return responseDecoded(of: type, parser: parser, completion: completion)
+        return self
     }
 
     func cancel() {
