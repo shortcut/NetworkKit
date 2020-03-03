@@ -76,8 +76,7 @@ extension URLSessionDataRequest: RequestResponses {
                 OperationQueue.main.addOperation {
                     completion(self.responseWithResult(.failure(.cancelled)))
                 }
-            }
-            else {
+            } else {
                 OperationQueue.main.addOperation {
                     completion(response)
                 }
@@ -96,8 +95,7 @@ extension URLSessionDataRequest: RequestResponses {
                 OperationQueue.main.addOperation {
                     completion(self.responseWithResult(.failure(.cancelled)))
                 }
-            }
-            else {
+            } else {
                 OperationQueue.main.addOperation {
                     completion(response)
                 }
@@ -120,8 +118,7 @@ extension URLSessionDataRequest: RequestResponses {
                 OperationQueue.main.addOperation {
                     completion(self.responseWithResult(.failure(.cancelled)))
                 }
-            }
-            else {
+            } else {
                 OperationQueue.main.addOperation {
                     completion(response)
                 }
@@ -145,8 +142,7 @@ extension URLSessionDataRequest: RequestResponses {
                 OperationQueue.main.addOperation {
                     completion(self.responseWithResult(.failure(.cancelled)))
                 }
-            }
-            else if self.error == nil {
+            } else if self.error == nil {
                 self.addParseOperation(parser: DecodableParser<T>(parser: parser)) { response in
                     OperationQueue.main.addOperation {
                         completion(response)
@@ -183,8 +179,7 @@ extension URLSessionDataRequest: RequestResponses {
                 OperationQueue.main.addOperation {
                     completion(self.responseWithResult(.failure(.cancelled)))
                 }
-            }
-            else {
+            } else {
                 OperationQueue.main.addOperation {
                     completion(response)
                 }

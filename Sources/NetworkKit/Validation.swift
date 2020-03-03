@@ -25,7 +25,7 @@ public struct FailValidator: ResponseValidator {
 /// most common validation, checking status code between 200 and 299
 public struct DefaultResponseValidator: ResponseValidator {
     public init() { }
-    
+
     fileprivate var acceptableStatusCodes: Range<Int> { return 200..<300 }
 
     public func validate(data: Data?, urlResponse: URLResponse?, error: Error?) -> Bool {

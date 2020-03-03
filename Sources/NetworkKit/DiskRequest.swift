@@ -143,11 +143,10 @@ class DiskRequest: NSObject, Request {
                 print(errorModelParseResult)
                 if let errorModel = try? errorModelParseResult.get() {
                     parserResult = .failure(.errorResponse(errorModel))
-                }
-                else {
+                } else {
                     parserResult = .failure(.validateError)
                 }
-                
+
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + self.delay, execute: {
                     if let parserResult = parserResult {
                         completion(Response(parserResult))
