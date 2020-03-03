@@ -69,3 +69,22 @@ extension Response {
          return response.allHeaderFields
      }
 }
+
+extension Response {
+    public var debugDescription: String {
+        let requestDescription = request.map { "\($0.httpMethod!) \($0)" } ?? "nil"
+        let requestHeaders = request.map { $0.allHTTPHeaderFields }
+        let requestBody = request?.httpBody.map { String(decoding: $0, as: UTF8.self) } ?? "None"
+        let responseBody = data.map { String(decoding: $0, as: UTF8.self) } ?? "None"
+
+        return """
+        [Request]: \(String(describing: requestDescription))
+        [Request Headers]: \(String(describing: requestHeaders))
+        [Request Body]: \n\(requestBody)
+        [Response Code]: \n\(String(describing: statusCode))
+        [Response Body]: \n\(responseBody)
+        [Data]: \(data?.description ?? "None")
+        [Result]: \(result)
+        """
+    }
+}
