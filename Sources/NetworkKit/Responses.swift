@@ -72,8 +72,15 @@ extension URLSessionDataRequest: RequestResponses {
         startTask()
 
         addParseOperation(parser: DataParser()) { response in
-            OperationQueue.main.addOperation {
-                completion(response)
+            if self.isCancelled {
+                OperationQueue.main.addOperation {
+                    completion(self.responseWithResult(.failure(.cancelled)))
+                }
+            }
+            else {
+                OperationQueue.main.addOperation {
+                    completion(response)
+                }
             }
         }
 
@@ -85,8 +92,15 @@ extension URLSessionDataRequest: RequestResponses {
         startTask()
 
         addParseOperation(parser: StringParser()) { response in
-            OperationQueue.main.addOperation {
-                completion(response)
+            if self.isCancelled {
+                OperationQueue.main.addOperation {
+                    completion(self.responseWithResult(.failure(.cancelled)))
+                }
+            }
+            else {
+                OperationQueue.main.addOperation {
+                    completion(response)
+                }
             }
         }
 
@@ -102,8 +116,15 @@ extension URLSessionDataRequest: RequestResponses {
         let parser = parser ?? self.defaultParser
 
         self.addParseOperation(parser: DecodableParser<T>(parser: parser)) { response in
-            OperationQueue.main.addOperation {
-                completion(response)
+            if self.isCancelled {
+                OperationQueue.main.addOperation {
+                    completion(self.responseWithResult(.failure(.cancelled)))
+                }
+            }
+            else {
+                OperationQueue.main.addOperation {
+                    completion(response)
+                }
             }
         }
 
@@ -120,7 +141,12 @@ extension URLSessionDataRequest: RequestResponses {
         let parser = parser ?? self.defaultParser
 
         afterRequestQueue.addOperation {
-            if self.error == nil {
+            if self.isCancelled {
+                OperationQueue.main.addOperation {
+                    completion(self.responseWithResult(.failure(.cancelled)))
+                }
+            }
+            else if self.error == nil {
                 self.addParseOperation(parser: DecodableParser<T>(parser: parser)) { response in
                     OperationQueue.main.addOperation {
                         completion(response)
@@ -153,8 +179,15 @@ extension URLSessionDataRequest: RequestResponses {
         startTask()
 
         self.addParseOperation(parser: JSONParser()) { response in
-            OperationQueue.main.addOperation {
-                completion(response)
+            if self.isCancelled {
+                OperationQueue.main.addOperation {
+                    completion(self.responseWithResult(.failure(.cancelled)))
+                }
+            }
+            else {
+                OperationQueue.main.addOperation {
+                    completion(response)
+                }
             }
         }
 
