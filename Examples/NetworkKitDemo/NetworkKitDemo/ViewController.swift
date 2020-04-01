@@ -41,35 +41,6 @@ struct HTTPBinResult: Decodable {
     let json: [String: String]?
 }
 
-enum HTTPBinAPI {
-    case status(code: Int)
-}
-
-extension HTTPBinAPI: TargetType {
-    var baseURL: URL {
-        URL(string: "http://httpbin.org/")!
-    }
-    
-    var path: String {
-        "get"
-    }
-    
-    var method: HTTPMethod {
-        .get
-    }
-    
-    
-}
-
-protocol Fetchable {
-    func target() -> TargetType
-//    var target: TargetType { get }
-}
-
-extension HTTPBinResult: Fetchable {
-    var target: TargetType { HTTPBinAPI.status(code: 1)) }
-}
-
 class ViewController: UIViewController {
 
     @IBOutlet weak var collectionView: UICollectionView!
@@ -88,7 +59,6 @@ class ViewController: UIViewController {
 
         let request = network.request("https://httpbin.org/anything")
 
-        network.request(HTTPBinResult.self, 
         request.responseDecoded(of: HTTPBinResult.self) { response in
             switch response.result {
             case let .success(bin):
