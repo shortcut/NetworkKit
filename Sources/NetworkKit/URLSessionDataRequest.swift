@@ -214,7 +214,7 @@ extension URLSessionDataRequest: URLSessionDataDelegate {
         }
 
         self.data = self.receivedData
-        
+
         finish()
     }
 
