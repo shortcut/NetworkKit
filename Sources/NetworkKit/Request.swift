@@ -20,12 +20,6 @@ public protocol Request: RequestResponses {
     /// the URLResponse returned. could be a HTTPURLResponse if using URLSessionDataRequest
     var response: URLResponse? { get }
 
-    /// the final collection of data returned
-    var data: Data? { get }
-
-    /// if an error was encountered, this will have the error
-    var error: NetworkError? { get }
-
     /// allows the URLRequest to be adapted before transport
     var adapters: [RequestAdapter] { get }
     func withAdapter(_ adapter: RequestAdapter) -> Self

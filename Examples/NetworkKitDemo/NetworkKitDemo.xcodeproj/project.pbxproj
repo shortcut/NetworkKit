@@ -27,10 +27,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		653E7AD32372C6B60012416F /* NetworkKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NetworkKit; path = ../..; sourceTree = "<group>"; };
 		6555856C2372FE58008379B5 /* NetworkKitDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NetworkKitDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6555856E2372FE58008379B5 /* NetworkKitDemoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkKitDemoTests.swift; sourceTree = "<group>"; };
 		655585702372FE58008379B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		656D4E1B241C10700079233B /* NetworkKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NetworkKit; path = ../..; sourceTree = "<group>"; };
 		657DA04023704EED00D25F68 /* NetworkKitDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkKitDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		657DA04323704EED00D25F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		657DA04723704EED00D25F68 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -78,7 +78,7 @@
 		657DA03723704EED00D25F68 = {
 			isa = PBXGroup;
 			children = (
-				653E7AD32372C6B60012416F /* NetworkKit */,
+				656D4E1B241C10700079233B /* NetworkKit */,
 				657DA04223704EED00D25F68 /* NetworkKitDemo */,
 				6555856D2372FE58008379B5 /* NetworkKitDemoTests */,
 				657DA04123704EED00D25F68 /* Products */,
