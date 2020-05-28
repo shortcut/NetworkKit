@@ -213,11 +213,8 @@ extension URLSessionDataRequest: URLSessionDataDelegate {
             self.error = .responseError(error)
         }
 
-        if let receivedData = self.receivedData,
-            receivedData.count > 0 {
-            self.data = self.receivedData
-            self.receivedData = nil
-        }
+        self.data = self.receivedData ?? Data()
+
         finish()
     }
 

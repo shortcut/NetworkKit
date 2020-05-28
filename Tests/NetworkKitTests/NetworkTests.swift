@@ -208,13 +208,13 @@ final class NetworkTests: XCTestCase {
             case .success:
                 XCTFail("the request should fail")
             case let .failure(error):
-                XCTAssertNil(response.data)
-                
+                XCTAssertEqual(response.data?.count, 0, "should have no data")
+
                 var cancelled = false
                 if case .cancelled = error {
                     cancelled = true
                 }
-                
+
                 XCTAssert(cancelled)
             }
 

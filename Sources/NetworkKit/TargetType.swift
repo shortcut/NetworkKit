@@ -36,7 +36,7 @@ public extension TargetType {
     var diskDelay: TimeInterval { 0 }
 }
 
-extension TargetType {
+public extension TargetType {
     func asURLRequest() -> URLRequest? {
         return URLRequest(baseURL: baseURL, path: path, httpMethod: method, headerValues: headerValues,
                           queryParameters: queryParameters, bodyType: bodyType, body: body, cachePolicy: cachePolicy)
