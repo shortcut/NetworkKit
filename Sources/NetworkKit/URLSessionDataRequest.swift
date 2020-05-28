@@ -213,7 +213,7 @@ extension URLSessionDataRequest: URLSessionDataDelegate {
             self.error = .responseError(error)
         }
 
-        self.data = self.receivedData
+        self.data = self.receivedData ?? Data()
 
         finish()
     }
